@@ -102,10 +102,35 @@
   function iniciar() {
     const vista = document.getElementById("vista");
 
+    /* ======================================================================
+       SECCIÓN: DIAGNÓSTICO — línea de estado abajo a la izquierda, solo en
+       la app empaquetada. Si la ventana se bloquea, esa línea indica en qué
+       paso se quedó (README: «bloqueos en la app de escritorio»).
+       ==================================================================== */
+    const cajaDiag = document.createElement("div");
+    cajaDiag.id = "diagnostico";
+    cajaDiag.hidden = true;   // se muestra solo si hay un error
+    document.body.appendChild(cajaDiag);
+    window._diagLineas = [];
+    window.Diag = function (txt) {
+      try {
+        window._diagLineas.push(txt);
+        if (window._diagLineas.length > 4) window._diagLineas.shift();
+        cajaDiag.textContent = window._diagLineas.join("  ·  ");
+        console.log("[PictoAmigos]", txt);
+      } catch (e) {}
+    };
+    window.Diag("Voz=" + (typeof window.Voz) +
+                " · esc=" + (window.Voz ? String(Voz.escritorio) : "s/Voz") +
+                " · proto=" + location.protocol +
+                " · tauri=" + (window.__TAURI_INTERNALS__ ? "si" : "no"));
+
     // Registro de errores: sirve para diagnosticar la app empaquetada
     // (verlos con: WEBKIT_DEBUG=1 ./pictoamigos)
     window.addEventListener("error", (e) => {
       console.error("[PictoAmigos] error:", e.message, "|", e.filename, ":", e.lineno);
+      cajaDiag.hidden = false;
+      window.Diag && window.Diag("ERROR: " + e.message + " (" + e.lineno + ")");
     });
     window.addEventListener("unhandledrejection", (e) => {
       console.error("[PictoAmigos] promesa rechazada:", e.reason);
@@ -128,11 +153,20 @@
 
     render();
 
-    // PWA: registrar el service worker (funcionamiento offline)
+    // PWA: solo en el navegador. En la app empaquetada todo es local y el
+    // Service Worker solo podría servir contenido cacheado antiguo: se omite
+    // su registro y se desregistra el que hubiera de versiones anteriores.
     if ("serviceWorker" in navigator) {
+      const enEscritorio = !!(window.Voz && Voz.escritorio);
       window.addEventListener("load", () => {
+        if (enEscritorio) {
+          navigator.serviceWorker.getRegistrations()
+            .then((rs) => rs.forEach((r) => r.unregister()))
+            .catch(() => {});
+          return;
+        }
         navigator.serviceWorker.register("sw.js")
-          .catch(err => console.warn("Sin modo offline:", err));
+          .catch((err) => console.warn("Sin modo offline:", err));
       });
     }
   }

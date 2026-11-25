@@ -416,6 +416,28 @@ button { font-family: inherit; }
   outline-offset: 2px;
 }
 
+/* ================== SECCIÓN: DIAGNÓSTICO (app empaquetada) ================== */
+/* Línea de estado abajo a la izquierda: indica en qué paso está la app.
+   Solo se muestra en la app de escritorio (se oculta con hidden=true). */
+#diagnostico {
+  position: fixed;
+  left: 6px;
+  bottom: 3px;
+  z-index: 999;
+  max-width: 60vw;
+  padding: 2px 8px;
+  background: rgba(255, 255, 255, .85);
+  border: 1px solid #E4E9F0;
+  border-radius: 999px;
+  font-size: 11px;
+  line-height: 1.4;
+  color: #8A93A0;
+  pointer-events: none;
+  white-space: normal;
+  max-width: 72vw;
+}
+#diagnostico[hidden] { display: none; }
+
 /* ==================== SECCIÓN: PANTALLA-CREDITOS ==================== */
 .boton-ancho { width: 100%; }
 

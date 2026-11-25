@@ -13,7 +13,7 @@
  * Salida: dist/  (añadida a .gitignore)
  */
 
-import { cpSync, existsSync, mkdirSync, readdirSync, rmSync, statSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -57,4 +57,29 @@ for (const elemento of INCLUIR) {
 }
 
 const bytes = await tamano(DESTINO);
-console.log(`dist/ listo: ${elementos} elementos, ${(bytes / 1024 / 1024).toFixed(1)} MB`);
+
+/* ---------------------------------------------------------------------------
+ * CACHÉ DEL WEBVIEW (importante): WebKit guarda en disco index.html y los
+ * JS/CSS, así que sin medida las actualizaciones seguirían mostrando el código
+ * viejo. Solución:
+ *   1) subrecursos con ?v=VERSION  (index.html en dist/)
+ *   2) la ventana abre index.html?v=VERSION  (tauri.conf.json)
+ * La VERSION es la de la app: solo cambia al publicar una nueva versión.
+ * ------------------------------------------------------------------------ */
+const confRuta = join(RAIZ, "src-tauri", "tauri.conf.json");
+const conf = JSON.parse(readFileSync(confRuta, "utf8"));
+const version = conf.version;
+const indice = join(DESTINO, "index.html");
+let html = readFileSync(indice, "utf8");
+html = html.replace(/(src|href)="([^"?]+\.(?:js|css))"/g, `$1="$2?v=${version}"`);
+writeFileSync(indice, html);
+
+const urlVentana = `index.html?v=${version}`;
+const ventana = conf.app && conf.app.windows && conf.app.windows[0];
+if (ventana && ventana.url !== urlVentana) {
+  ventana.url = urlVentana;
+  writeFileSync(confRuta, JSON.stringify(conf, null, 2) + "\n");
+  console.log(`tauri.conf.json -> app.windows[0].url = ${urlVentana}`);
+}
+
+console.log(`dist/ listo: ${elementos} elementos, ${(bytes / 1024 / 1024).toFixed(1)} MB · versión ${version}`);

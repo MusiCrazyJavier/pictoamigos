@@ -243,6 +243,12 @@ cargo tauri dev
 - **Iconos**: `src-tauri/icons/` (PNG32/128/256/512 + `icon.ico`). Para regenerarlos
   desde el logo: `python3 tools/generar-iconos.py` (o `cargo tauri icon logo.png`).
 - **Android** exige Android Studio + SDK; **iOS/macOS** exigen un Mac con Xcode.
+- **AppImage y audio**: `bundle.linux.appimage.bundleMediaFramework = true` es
+  **obligatorio**; sin él el AppImage no lleva los plugins de GStreamer y la app se
+  congela al pronunciar un pictograma (README, «bloqueos en la app de escritorio»).
+  Para recompilarlo en Arch/Linux hacen falta:
+  `export PATH="$HOME/.local/bin:$PATH"` (patchelf) y
+  `export GSTREAMER_HELPERS_DIR=/usr/lib/gstreamer-1.0`.
 - El modelo de voz (34 MB) **se incluye en `dist/`** para que el reconocimiento
   funcione sin internet. Si quieres un instalador más ligero, quita `"modelos"` de
   `INCLUIR` en `tools/preparar-dist.mjs` (la práctica de pronunciación pedirá

@@ -24,3 +24,6 @@ out/
 # ---- Empaquetado Tauri ----
 dist/
 src-tauri/gen/
+
+# ---- Extraído del AppImage (pruebas) ----
+squashfs-root/

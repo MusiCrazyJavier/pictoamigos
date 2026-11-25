@@ -79,31 +79,51 @@ window.Voz = (function () {
     return clave ? mapa[clave] : null;
   }
 
-  /** Reproduce un MP3 incluido. */
-  function hablarLocal(texto) {
+  /** Reproduce un MP3 incluido.
+   *  IMPORTANTE: en la app empaquetada el protocolo propio (tauri://) no sirve
+   *  el MP3 al elemento <audio> (GStreamer no entiende el esquema → error4 /
+   *  NETWORK_NO_SOURCE). Se carga con fetch y se reproduce como blob. */
+  const cacheBlobs = {};
+  let contadorReproduccion = 0;
+
+  async function hablarLocal(texto) {
     const fichero = ficheroDe(texto);
-    if (!fichero) return false;
+    if (!fichero) { window.Diag && Diag("sin MP3 para: " + texto); return false; }
+    const orden = ++contadorReproduccion;
     try {
+      let url = cacheBlobs[fichero];
+      if (!url) {
+        window.Diag && Diag("audio: cargando " + fichero);
+        const respuesta = await fetch("audio/" + fichero);
+        if (!respuesta.ok) {
+          window.Diag && Diag("audio: HTTP " + respuesta.status + " en " + fichero);
+          return false;
+        }
+        url = URL.createObjectURL(await respuesta.blob());
+        cacheBlobs[fichero] = url;
+      }
+      if (orden !== contadorReproduccion) return true;   // ya se pidió otra palabra
       if (!elementoAudio) {
         elementoAudio = new Audio();
         elementoAudio.preload = "auto";
       }
       elementoAudio.pause();
-      elementoAudio.src = "audio/" + fichero;
+      elementoAudio.src = url;
       try { elementoAudio.currentTime = 0; } catch (e) {}
+      window.Diag && Diag("audio: reproduciendo " + fichero);
       const p = elementoAudio.play();
-      if (p && p.catch) p.catch(err => console.warn("[voz] play() rechazado:", err && err.name));
+      if (p && p.catch) p.catch(err =>
+        window.Diag && Diag("play rechazado: " + (err && err.name)));
       return true;
     } catch (e) {
-      console.warn("[voz] Audio local no disponible:", e);
+      window.Diag && Diag("audio ERROR: " + e.message);
       return false;
     }
   }
-
   function hablarSistema(texto) {
     const t = String(texto || "").trim();
     if (!t || !soportado()) return false;
-    console.log("[voz] >>> speechSynthesis.speak()", t);   // diagnóstico
+    window.Diag && Diag(">>> speechSynthesis.speak(): " + t);
     try {
       window.speechSynthesis.cancel();
       const u = new SpeechSynthesisUtterance(t);
@@ -130,11 +150,11 @@ window.Voz = (function () {
     // ESCRITORIO: nunca se llama a la voz del sistema, porque en WebKitGTK
     // speechSynthesis puede bloquear la ventana de forma permanente.
     if (EN_ESCRITORIO && cfg.modo !== "sistema") {
-      console.log("[voz] local ->", t, "| escritorio:", EN_ESCRITORIO, "| modo:", cfg.modo);
+      window.Diag && Diag("hablar(local): " + t);
       if (!hablarLocal(t)) console.warn("[voz] sin MP3 para:", t);
       return;
     }
-    console.log("[voz] modo:", cfg.modo, "| escritorio:", EN_ESCRITORIO, "| texto:", t);
+    window.Diag && Diag("hablar(" + cfg.modo + "): " + t);
 
     const haySistema = !!vozEspanola();
 
@@ -156,7 +176,7 @@ window.Voz = (function () {
   let sistemaUsado = false;
 
   function detener() {
-    console.log("[voz] detener() | sistemaUsado:", sistemaUsado);
+    window.Diag && Diag("detener() sistemaUsado=" + sistemaUsado);
     if (sistemaUsado && soportado()) {
       try { window.speechSynthesis.cancel(); } catch (e) {}
     }
@@ -247,5 +267,15 @@ window.Voz = (function () {
 
   return { hablar, detener, configurar, sonidoExito, desbloquearAudio,
            soportado, estado,
-           get config() { return Object.assign({}, cfg); } };
+           get config() { return Object.assign({}, cfg); },
+         get escritorio() { return EN_ESCRITORIO; },
+         estadoReproduccion() {
+           if (!elementoAudio) return { src: "(nada)", t: 0, pausado: true, error: null };
+           return {
+             src: (elementoAudio.currentSrc || elementoAudio.src || "").split("/").slice(-1)[0],
+             t: Number((elementoAudio.currentTime || 0).toFixed(2)),
+             pausado: elementoAudio.paused,
+             error: elementoAudio.error ? elementoAudio.error.code : null
+           };
+         } };
 })();

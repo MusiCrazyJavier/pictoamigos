@@ -128,19 +128,30 @@ Instalación de Piper y de más voces: cabecera de `tools/generar-audios.py`.
 
 ## 🧊 Solucionar: «la app de escritorio se traba en el primer clic»
 
-**Causa (versión ≤ v19):** en el primer clic la app creaba `AudioContext` y llamaba a
-`speechSynthesis` del sistema. En Linux **WebKitGTK puede bloquearse de forma permanente**
-si el demonio de voz (`speech-dispatcher`) no está disponible o no responde.
+**Causa real (diagnosticada con el indicador de la propia app):** el **AppImage no
+incluía los plugins de audio de GStreamer** (`appsink`, `autoaudiosink`). Al pronunciar
+un pictograma, WebKit intentaba montar la tubería de audio, no la encontraba y la
+ventana **se congelaba** (log: `GStreamer element appsink not found` + `GLib-GObject-CRITICAL`).
 
-**Solución (v20+):** dentro de la app empaquetada (Tauri) se detecta el entorno y:
+**Solución aplicada:**
 
-- se usan **solo los MP3 incluidos** (nunca la voz del sistema) salvo que el usuario
-  elija expresamente «Voz del dispositivo» en Ajustes;
-- no se crea `AudioContext` en el primer clic (la campanita es un WAV embebido);
-- `speechSynthesis.cancel()` solo se llama si antes se usó la voz del sistema.
+1. `src-tauri/tauri.conf.json → bundle.linux.appimage.bundleMediaFramework = true`
+   → el AppImage empaqueta GStreamer (144 MB → **220 MB**; los `.deb`/`.rpm` siguen en
+   38 MB porque usan el GStreamer del sistema, y el binario también).
+2. Defensas añadidas en **MOTOR-DE-VOZ**: en escritorio jamás se usa la voz del
+   sistema, la campanita es un WAV embebido y el micrófono tiene timeout de8 s.
 
-Si tienes una versión antigua, descarga la más reciente del release o recompila:
-`cd src-tauri && cargo tauri build`.
+**Si recompilas el AppImage en Arch/Linux** necesitas `patchelf` y la ruta de helpers:
+
+```bash
+export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$PATH"   # patchelf en ~/.local/bin
+export GSTREAMER_HELPERS_DIR=/usr/lib/gstreamer-1.0     # ruta de tu distro
+cargo tauri build
+```
+(En Ubuntu/Debian ya vienen instalados: por eso la CI de GitHub no fallaba.)
+
+**Diagnóstico:** si vuelve a fallar algo, aparece una **línea gris abajo a la izquierda**
+con el paso exacto (`ERROR: …`), y los errores de JS también se imprimen en consola.
 
 ## 🎤 Práctica de pronunciación (micrófono)
 

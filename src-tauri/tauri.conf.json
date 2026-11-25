@@ -19,11 +19,12 @@
         "minHeight": 480,
         "center": true,
         "resizable": true,
-        "fullscreen": false
+        "fullscreen": false,
+        "url": "index.html?v=1.0.0"
       }
     ],
     "security": {
-      "csp": "default-src 'self'; script-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://static.arasaac.org; media-src 'self' data:; connect-src 'self'; worker-src 'self' blob:; font-src 'self'; object-src 'none'; frame-src 'none'"
+      "csp": "default-src 'self'; script-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://static.arasaac.org; media-src 'self' data: blob:; connect-src 'self'; worker-src 'self' blob:; font-src 'self'; object-src 'none'; frame-src 'none'"
     }
   },
   "bundle": {
@@ -40,10 +41,16 @@
       "icons/icon.ico"
     ],
     "linux": {
-      "deb": {}
+      "deb": {},
+      "rpm": {},
+      "appimage": {
+        "bundleMediaFramework": true
+      }
     },
     "windows": {
-      "webviewInstallMode": { "type": "downloadBootstrapper" }
+      "webviewInstallMode": {
+        "type": "downloadBootstrapper"
+      }
     },
     "macOS": {
       "minimumSystemVersion": "10.15"
