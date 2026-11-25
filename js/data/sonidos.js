@@ -95,7 +95,7 @@ window.SONIDOS = {
   "comida": "comida.mp3",
   "como": "como.mp3",
   "comprar": "comprar.mp3",
-  "con": "con.mp3",
+  "con": "palabra-con.mp3",
   "conejo": "conejo.mp3",
   "confiar": "confiar.mp3",
   "contar a alguien": "contar-a-alguien.mp3",

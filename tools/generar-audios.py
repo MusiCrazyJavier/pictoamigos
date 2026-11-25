@@ -43,6 +43,12 @@ CARPETA_AUDIO = os.path.join(RAIZ, "audio")
 CARPETA_MUESTRAS = os.path.join(RAIZ, "tools", "voces-ejemplo")
 SALIDA_JS = os.path.join(RAIZ, "js", "data", "sonidos.js")
 
+# Nombres de dispositivo reservados en Windows: no se pueden usar como fichero
+# (afecta a Git al hacer checkout en Windows y a la CI).
+RESERVADO_WINDOWS = ({"con", "prn", "aux", "nul"}
+                     | {f"com{i}" for i in range(10)}
+                     | {f"lpt{i}" for i in range(10)})
+
 PIPER_VENV = os.path.expanduser("~/.local/share/piper/venv/bin/piper")
 DIR_VOZES = os.path.expanduser("~/.local/share/piper/voices")
 VOZ_DEFECTO = "es_MX-claude-high"   # voz elegida por el usuario (cambiar con --voz)
@@ -93,11 +99,17 @@ def leer_frases(ruta):
 
 
 def nombre_fichero(texto):
-    """Nombre seguro de fichero: '¡Muy bien!' -> 'muy-bien'"""
+    """Nombre seguro de fichero: '¡Muy bien!' -> 'muy-bien'.
+    También evita los nombres reservados de Windows (CON, AUX, NUL, PRN,
+    COM1…, LPT1…): si no, Git no puede hacer checkout en Windows."""
     t = unicodedata.normalize("NFD", texto.lower())
     t = "".join(c for c in t if unicodedata.category(c) != "Mn")
     t = re.sub(r"[^a-z0-9]+", "-", t).strip("-")
-    return t or "audio"
+    if not t:
+        return "audio"
+    if t in RESERVADO_WINDOWS:
+        t = "palabra-" + t
+    return t
 
 
 # --------------------------------------------------------------- localizar
