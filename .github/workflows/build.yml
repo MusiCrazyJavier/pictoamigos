@@ -1,0 +1,70 @@
+# ============================================================================
+# SECCIÓN: EMPACADO-CI — compila PictoAmigos para las tres plataformas de
+# escritorio en cada push a `main` (o manualmente desde la pestaña Actions).
+#
+# Linux   -> .deb + .AppImage
+# Windows -> .msi (WiX) + NSIS
+# macOS   -> .dmg
+#
+# Android/iOS no salen de aquí: necesitan Android Studio/SDK y un Mac con Xcode
+# (ver docs/DOCUMENTACION.md, receta14).
+# ============================================================================
+
+name: Compilar PictoAmigos
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  escritorio:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: ubuntu-latest
+            args: ""
+          - platform: windows-latest
+            args: ""
+          - platform: macos-latest
+            args: ""
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Rust estable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+
+      - name: Dependencias de Linux (webkit2gtk)
+        if: matrix.platform == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libgtk-3-dev \
+            libayatana-appindicator3-dev librsvg2-dev build-essential \
+            curl wget file libssl-dev libxdo-dev
+
+      - name: Configurar Node (para preparar-dist.mjs)
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Instalar Tauri CLI
+        run: npm install -g @tauri-apps/cli@^2
+
+      - name: Compilar e empaquetar
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: v-app-v1.0.0
+          releaseName: "PictoAmigos v1.0.0"
+          releaseBody: |
+            App de pictogramas con voz para niños con TEA.
+            Licencia: GPL-3.0-or-later (código) · CC BY-NC-SA (pictogramas ARASAAC).
+          releaseDraft: true
+          prerelease: false
+          args: ${{ matrix.args }}

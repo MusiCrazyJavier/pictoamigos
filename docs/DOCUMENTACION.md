@@ -40,7 +40,7 @@ REGLAS A RESPETAR:
 | **SONIDOS-LOCALES** | `js/data/sonidos.js` | Mapa `texto → MP3 incluido` (195 audios). Se genera solo; **no editar a mano**. |
 | **GENERADOR-DE-AUDIOS** | `tools/generar-audios.py` | Script que regenera los MP3 de voz (Piper TTS, con espeak-ng de respaldo). |
 | **REVISIÓN-DE-IMÁGENES** | `tools/revision-cuerpo.py` | Genera la página para que un adulto revise los pictogramas de la sección restringida. |
-| **EMPACADO-TAURI** | `src-tauri/` + `tools/preparar-dist.py` | Versión de escritorio/móvil (Tauri v2) que no depende de un navegador. |
+| **EMPACADO-TAURI** | `src-tauri/` + `tools/preparar-dist.mjs` | Versión de escritorio/móvil (Tauri v2) que no depende de un navegador. |
 | **MOTOR-DE-VOZ** | `js/audio.js` | Todo el sonido: voz incluida (MP3) y voz del dispositivo (Web Speech API), velocidad, campanita. |
 | **COMPONENTES-UI** | `js/ui.js` | Tarjetas, botones, imágenes con respaldo, avisos y barajado. |
 | **GESTOS-NAVEGACION** | `js/gestos.js` | Deslizar (izquierda/derecha/borde), ratón y teclado. |
@@ -221,7 +221,7 @@ Archivo: **PANTALLA-CREDITOS** (`js/screens.js`).
   y los usados para crearla (MiMo, OpenCode): si se añade otro modelo, añadirlo ahí.
 
 ### 14. Compilar la versión de escritorio / móvil (Tauri)
-Archivo: **EMPACADO-TAURI** (`src-tauri/`) + `tools/preparar-dist.py`.
+Archivo: **EMPACADO-TAURI** (`src-tauri/`) + `tools/preparar-dist.mjs`.
 
 ```bash
 # 1) Binario de Linux (funciona ya mismo)
@@ -245,7 +245,7 @@ cargo tauri dev
 - **Android** exige Android Studio + SDK; **iOS/macOS** exigen un Mac con Xcode.
 - El modelo de voz (34 MB) **se incluye en `dist/`** para que el reconocimiento
   funcione sin internet. Si quieres un instalador más ligero, quita `"modelos"` de
-  `INCLUIR` en `tools/preparar-dist.py` (la práctica de pronunciación pedirá
+  `INCLUIR` en `tools/preparar-dist.mjs` (la práctica de pronunciación pedirá
   descargarlo, pero sin servidor no podrá: mejor mantenerlo).
 
 ---
@@ -350,7 +350,7 @@ App Autismo/
 ├── tools/
 │   ├── generar-audios.py    GENERADOR-DE-AUDIOS
 │   ├── revision-cuerpo.py   REVISIÓN-DE-IMÁGENES
-│   ├── preparar-dist.py     EMPACADO-TAURI (prepara dist/)
+│   ├── preparar-dist.mjs     EMPACADO-TAURI (prepara dist/)
 │   ├── revision-cuerpo/     (salida: página de revisión)
 │   └── voces-ejemplo/       (muestras para comparar voces)
 ├── src-tauri/               EMPACADO-TAURI (proyecto Tauri v2)
@@ -358,7 +358,7 @@ App Autismo/
 │   ├── capabilities/        permisos
 │   ├── src/                 main.rs + lib.rs
 │   └── icons/               PNG + ICO
-├── dist/                    (generado por preparar-dist.py; no se sube a git)
+├── dist/                    (generado por preparar-dist.mjs; no se sube a git)
 ├── css/
 │   └── styles.css           SISTEMA-DISEÑO
 ├── icons/                   ICONOS (icon-192, icon-512, favicon)

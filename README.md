@@ -179,7 +179,7 @@ La app es 100 % web, pero se puede **empaquetar como programa de escritorio** co
 | **iOS / macOS** | requiere un Mac con Xcode | `.ipa` / `.dmg` |
 
 - En desarrollo: `python3 -m http.server 8137` y `cargo tauri dev` (abre la app apuntando a ese servidor).
-- Antes de compilar, `tools/preparar-dist.py` crea `dist/` con **solo** lo necesario
+- Antes de compilar, `tools/preparar-dist.mjs` crea `dist/` con **solo** lo necesario
   (incluidos los MP3 y el modelo de voz de34 MB → **funciona sin internet**).
 - **Sobre la voz en las apps de escritorio:** ninguna usa los modelos de voz de Chrome.
   Aquí se usa la **voz incluida (MP3 de Piper)** + la **voz del sistema** + **Vosk**

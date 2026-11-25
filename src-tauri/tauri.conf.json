@@ -6,7 +6,7 @@
   "build": {
     "frontendDist": "../dist",
     "devUrl": "http://localhost:8137",
-    "beforeBuildCommand": "python3 tools/preparar-dist.py"
+    "beforeBuildCommand": "node tools/preparar-dist.mjs"
   },
   "app": {
     "windows": [
