@@ -1,0 +1,52 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "PictoAmigos",
+  "version": "1.0.0",
+  "identifier": "com.franciscojavier.pictoamigos",
+  "build": {
+    "frontendDist": "../dist",
+    "devUrl": "http://localhost:8137",
+    "beforeBuildCommand": "python3 tools/preparar-dist.py"
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "PictoAmigos — Pictogramas con voz",
+        "width": 1280,
+        "height": 840,
+        "minWidth": 360,
+        "minHeight": 480,
+        "center": true,
+        "resizable": true,
+        "fullscreen": false
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self'; script-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://static.arasaac.org; media-src 'self' data:; connect-src 'self'; worker-src 'self' blob:; font-src 'self'; object-src 'none'; frame-src 'none'"
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "category": "Education",
+    "shortDescription": "Pictogramas con voz para niños con TEA",
+    "longDescription": "PictoAmigos: niveles de pictogramas con voz, sección para formar frases y práctica de pronunciación. Funciona sin conexión a internet.",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.png",
+      "icons/icon.ico"
+    ],
+    "linux": {
+      "deb": {}
+    },
+    "windows": {
+      "webviewInstallMode": { "type": "downloadBootstrapper" }
+    },
+    "macOS": {
+      "minimumSystemVersion": "10.15"
+    }
+  }
+}

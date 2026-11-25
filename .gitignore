@@ -20,3 +20,7 @@ Thumbs.db
 # ---- Compilación de Tauri/Electron (si se añaden) ----
 src-tauri/target/
 out/
+
+# ---- Empaquetado Tauri ----
+dist/
+src-tauri/gen/

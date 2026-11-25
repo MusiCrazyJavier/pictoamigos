@@ -165,6 +165,35 @@ con TEA: nombres del cuerpo, higiene, público/privado, límites y pubertad.
 - Por qué está así y con qué criterios se diseñó: `docs/INVESTIGACION.md` §4bis
   (guías de CHOP, Autismo España, Vanderbilt VKC, Davies et al., Be Safe…).
 
+## 📦 Instalar sin depender del navegador (Tauri)
+
+La app es 100 % web, pero se puede **empaquetar como programa de escritorio** con
+**Tauri v2**: usa el WebView del sistema (no lleva Chrome dentro) → binarios de
+**5–15 MB** en vez de ~180 MB de Electron.
+
+| Plataforma | Comando | Resultado |
+|---|---|---|
+| **Linux** | `cd src-tauri && cargo build --release` | `src-tauri/target/release/pictoamigos` |
+| **Instaladores** (deb/AppImage/msi/dmg) | `cargo install tauri-cli` y luego `cargo tauri build` | `src-tauri/target/release/bundle/` |
+| **Android** | instalar Android Studio + SDK y `cargo tauri android init/build` | APK |
+| **iOS / macOS** | requiere un Mac con Xcode | `.ipa` / `.dmg` |
+
+- En desarrollo: `python3 -m http.server 8137` y `cargo tauri dev` (abre la app apuntando a ese servidor).
+- Antes de compilar, `tools/preparar-dist.py` crea `dist/` con **solo** lo necesario
+  (incluidos los MP3 y el modelo de voz de34 MB → **funciona sin internet**).
+- **Sobre la voz en las apps de escritorio:** ninguna usa los modelos de voz de Chrome.
+  Aquí se usa la **voz incluida (MP3 de Piper)** + la **voz del sistema** + **Vosk**
+  para el micrófono, así que todo funciona **sin conexión** en Tauri.
+
+### Otras opciones valoradas
+
+| Opción | Tamaño | Notas |
+|---|---|---|
+| **PWA** (ya incluida) |0 MB | Se instala desde el navegador en Android/iOS/Windows |
+| **Electron** | ~180 MB | Máxima compatibilidad, más pesado |
+| **PWABuilder** | — | Genera un APK desde la PWA sin compilar |
+| **Capacitor** | — | Para publicar en App Store / Play Store |
+
 ## 📜 Créditos y licencias
 
 En **Ajustes → «Créditos y licencias»** (último botón) está la pantalla **PANTALLA-CREDITOS**:

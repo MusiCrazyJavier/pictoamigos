@@ -40,6 +40,7 @@ REGLAS A RESPETAR:
 | **SONIDOS-LOCALES** | `js/data/sonidos.js` | Mapa `texto → MP3 incluido` (195 audios). Se genera solo; **no editar a mano**. |
 | **GENERADOR-DE-AUDIOS** | `tools/generar-audios.py` | Script que regenera los MP3 de voz (Piper TTS, con espeak-ng de respaldo). |
 | **REVISIÓN-DE-IMÁGENES** | `tools/revision-cuerpo.py` | Genera la página para que un adulto revise los pictogramas de la sección restringida. |
+| **EMPACADO-TAURI** | `src-tauri/` + `tools/preparar-dist.py` | Versión de escritorio/móvil (Tauri v2) que no depende de un navegador. |
 | **MOTOR-DE-VOZ** | `js/audio.js` | Todo el sonido: voz incluida (MP3) y voz del dispositivo (Web Speech API), velocidad, campanita. |
 | **COMPONENTES-UI** | `js/ui.js` | Tarjetas, botones, imágenes con respaldo, avisos y barajado. |
 | **GESTOS-NAVEGACION** | `js/gestos.js` | Deslizar (izquierda/derecha/borde), ratón y teclado. |
@@ -219,6 +220,34 @@ Archivo: **PANTALLA-CREDITOS** (`js/screens.js`).
 - La **SECCIÓN: CREDITOS-DE-IA** lista los modelos usados por la app (Piper TTS, Vosk)
   y los usados para crearla (MiMo, OpenCode): si se añade otro modelo, añadirlo ahí.
 
+### 14. Compilar la versión de escritorio / móvil (Tauri)
+Archivo: **EMPACADO-TAURI** (`src-tauri/`) + `tools/preparar-dist.py`.
+
+```bash
+# 1) Binario de Linux (funciona ya mismo)
+cd src-tauri && cargo build --release
+./target/release/pictoamigos
+
+# 2) Instaladores (deb, AppImage, msi, dmg)
+cargo install tauri-cli          # una sola vez
+cd src-tauri && cargo tauri build   # salen en target/release/bundle/
+
+# 3) Desarrollo con recarga
+python3 -m http.server 8137      # en otra terminal
+cargo tauri dev
+```
+
+- **CSP** (`tauri.conf.json > app > security > csp`): permite imágenes de
+  `static.arasaac.org`, `blob:` (trabajador de Vosk) y MP3 locales. Si añades un
+  dominio externo, añádelo también ahí, si no el navegador lo bloqueará.
+- **Iconos**: `src-tauri/icons/` (PNG32/128/256/512 + `icon.ico`). Para regenerarlos
+  desde el logo: `python3 tools/generar-iconos.py` (o `cargo tauri icon logo.png`).
+- **Android** exige Android Studio + SDK; **iOS/macOS** exigen un Mac con Xcode.
+- El modelo de voz (34 MB) **se incluye en `dist/`** para que el reconocimiento
+  funcione sin internet. Si quieres un instalador más ligero, quita `"modelos"` de
+  `INCLUIR` en `tools/preparar-dist.py` (la práctica de pronunciación pedirá
+  descargarlo, pero sin servidor no podrá: mejor mantenerlo).
+
 ---
 
 ## ⚠ Reglas que no deben romperse
@@ -298,6 +327,10 @@ Comprobaciones mínimas:
    **SECCIÓN: CREDITOS-DE-IA**; el botón Atrás regresa a Ajustes (no al HOME).
 10. Sin consola con errores rojos (pestaña *Console* del navegador).
 11. Tras un cambio, recargar y comprobar que aparece (si un fichero cacheado no cambia, subir `CACHE_VERSION`).
+12. **Escritorio (Tauri)**: `cd src-tauri && cargo build --release` compila sin errores y
+    `./target/release/pictoamigos` abre la app con pictogramas, voz y micrófono funcionando
+    (comprobar también que las imágenes de ARASAAC cargan: el CSP de `tauri.conf.json`
+    debe incluir `https://static.arasaac.org`).
 
 > Nota: para probar el micrófono sin voz real se puede sustituir `window.SpeechRecognition`
 > por una clase falsa que llame a `onresult({results:[[{transcript:"palabra"}]]})`.
@@ -317,8 +350,15 @@ App Autismo/
 ├── tools/
 │   ├── generar-audios.py    GENERADOR-DE-AUDIOS
 │   ├── revision-cuerpo.py   REVISIÓN-DE-IMÁGENES
-│   └── revision-cuerpo/     (salida: página de revisión)
+│   ├── preparar-dist.py     EMPACADO-TAURI (prepara dist/)
+│   ├── revision-cuerpo/     (salida: página de revisión)
 │   └── voces-ejemplo/       (muestras para comparar voces)
+├── src-tauri/               EMPACADO-TAURI (proyecto Tauri v2)
+│   ├── tauri.conf.json      ventana, CSP, iconos, bundle
+│   ├── capabilities/        permisos
+│   ├── src/                 main.rs + lib.rs
+│   └── icons/               PNG + ICO
+├── dist/                    (generado por preparar-dist.py; no se sube a git)
 ├── css/
 │   └── styles.css           SISTEMA-DISEÑO
 ├── icons/                   ICONOS (icon-192, icon-512, favicon)

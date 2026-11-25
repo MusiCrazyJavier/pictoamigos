@@ -1,0 +1,8 @@
+{
+  "identifier": "default",
+  "description": "Permisos de la ventana principal. La app es 100% web y no usa APIs nativas de Tauri (el micrófono lo gestiona el WebView del sistema).",
+  "windows": ["main"],
+  "permissions": [
+    "core:default"
+  ]
+}
