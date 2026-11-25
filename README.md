@@ -126,6 +126,22 @@ La página de muestras incluye las palabras difíciles (rojo, cruz, gafas, panta
 para comparar la pronunciación voz por voz.
 Instalación de Piper y de más voces: cabecera de `tools/generar-audios.py`.
 
+## 🧊 Solucionar: «la app de escritorio se traba en el primer clic»
+
+**Causa (versión ≤ v19):** en el primer clic la app creaba `AudioContext` y llamaba a
+`speechSynthesis` del sistema. En Linux **WebKitGTK puede bloquearse de forma permanente**
+si el demonio de voz (`speech-dispatcher`) no está disponible o no responde.
+
+**Solución (v20+):** dentro de la app empaquetada (Tauri) se detecta el entorno y:
+
+- se usan **solo los MP3 incluidos** (nunca la voz del sistema) salvo que el usuario
+  elija expresamente «Voz del dispositivo» en Ajustes;
+- no se crea `AudioContext` en el primer clic (la campanita es un WAV embebido);
+- `speechSynthesis.cancel()` solo se llama si antes se usó la voz del sistema.
+
+Si tienes una versión antigua, descarga la más reciente del release o recompila:
+`cd src-tauri && cargo tauri build`.
+
 ## 🎤 Práctica de pronunciación (micrófono)
 
 En la esquina **inferior derecha** de cada tarjeta de nivel hay un botón de micrófono:

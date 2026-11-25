@@ -448,9 +448,15 @@ window.Pantallas = (function () {
     const estadoVoz = Voz.estado();
     const estadoFila = document.createElement("p");
     estadoFila.className = "nota-ajustes";
-    estadoFila.textContent = estadoVoz.vocesSistema > 0
-      ? `Este dispositivo tiene ${estadoVoz.vocesSistema} voz(es) en español. La app incluye ${estadoVoz.audiosLocales} audios de respaldo.`
-      : `Este dispositivo no tiene voces en español: se usarán los ${estadoVoz.audiosLocales} audios incluidos en la app.`;
+    if (estadoVoz.enEscritorio) {
+      estadoFila.textContent =
+        "App de escritorio: se usa la voz incluida (MP3) porque consultar la voz " +
+        "del sistema puede bloquear la ventana. Puedes cambiarlo en «Origen de la voz».";
+    } else {
+      estadoFila.textContent = estadoVoz.vocesSistema > 0
+        ? `Este dispositivo tiene ${estadoVoz.vocesSistema} voz(es) en español. La app incluye ${estadoVoz.audiosLocales} audios de respaldo.`
+        : `Este dispositivo no tiene voces en español: se usarán los ${estadoVoz.audiosLocales} audios incluidos en la app.`;
+    }
 
     /* ======================================================================
        SECCIÓN: AJUSTES-DEL-MICRÓFONO  (dentro de PANTALLA-AJUSTES)

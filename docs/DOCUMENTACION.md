@@ -41,7 +41,7 @@ REGLAS A RESPETAR:
 | **GENERADOR-DE-AUDIOS** | `tools/generar-audios.py` | Script que regenera los MP3 de voz (Piper TTS, con espeak-ng de respaldo). |
 | **REVISIÓN-DE-IMÁGENES** | `tools/revision-cuerpo.py` | Genera la página para que un adulto revise los pictogramas de la sección restringida. |
 | **EMPACADO-TAURI** | `src-tauri/` + `tools/preparar-dist.mjs` | Versión de escritorio/móvil (Tauri v2) que no depende de un navegador. |
-| **MOTOR-DE-VOZ** | `js/audio.js` | Todo el sonido: voz incluida (MP3) y voz del dispositivo (Web Speech API), velocidad, campanita. |
+| **MOTOR-DE-VOZ** | `js/audio.js` | Todo el sonido: voz incluida (MP3) y voz del dispositivo (Web Speech API), velocidad, campanita. **En la app de escritorio (Tauri) usa solo los MP3** por `EN_ESCRITORIO`, para evitar bloqueos de WebKitGTK. |
 | **COMPONENTES-UI** | `js/ui.js` | Tarjetas, botones, imágenes con respaldo, avisos y barajado. |
 | **GESTOS-NAVEGACION** | `js/gestos.js` | Deslizar (izquierda/derecha/borde), ratón y teclado. |
 | **PANTALLAS** | `js/screens.js` | Contenido y lógica de las 4 pantallas (ver subsecciones abajo). |
