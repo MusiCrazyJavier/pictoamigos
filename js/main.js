@@ -120,7 +120,7 @@
         console.log("[PictoAmigos]", txt);
       } catch (e) {}
     };
-    window.Diag("Voz=" + (typeof window.Voz) +
+    window.Diag("arranque · esc=" + (window.Voz && Voz.escritorio) +
                 " · esc=" + (window.Voz ? String(Voz.escritorio) : "s/Voz") +
                 " · proto=" + location.protocol +
                 " · tauri=" + (window.__TAURI_INTERNALS__ ? "si" : "no"));

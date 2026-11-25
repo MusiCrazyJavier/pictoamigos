@@ -13,7 +13,7 @@
  * Salida: dist/  (añadida a .gitignore)
  */
 
-import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, utimesSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -81,5 +81,13 @@ if (ventana && ventana.url !== urlVentana) {
   writeFileSync(confRuta, JSON.stringify(conf, null, 2) + "\n");
   console.log(`tauri.conf.json -> app.windows[0].url = ${urlVentana}`);
 }
+
+/* IMPORTANTE: tauri::generate_context!() lee los assets al expandir la macro
+ * en src/lib.rs. Si lib.rs no cambia, la compilación incremental reutiliza la
+ * expansión anterior y el binario se queda con JS/CSS VIEJOS. Tocar lib.rs
+ * fuerza la re-expansión en cada build. */
+const libRs = join(RAIZ, "src-tauri", "src", "lib.rs");
+const ahora = new Date();
+try { utimesSync(libRs, ahora, ahora); } catch (_) {}
 
 console.log(`dist/ listo: ${elementos} elementos, ${(bytes / 1024 / 1024).toFixed(1)} MB · versión ${version}`);

@@ -238,8 +238,19 @@ cargo tauri dev
 ```
 
 - **CSP** (`tauri.conf.json > app > security > csp`): permite imágenes de
-  `static.arasaac.org`, `blob:` (trabajador de Vosk) y MP3 locales. Si añades un
-  dominio externo, añádelo también ahí, si no el navegador lo bloqueará.
+  `static.arasaac.org`, `blob:` (trabajador de Vosk y reproducción de MP3) y audio
+  local. Si añades un dominio externo, añádelo también ahí, si no el navegador lo bloqueará.
+- ⚠ **Assets del binario**: `tauri::generate_context!()` lee `dist/` al expandir la
+  macro en `src-tauri/src/lib.rs`. Si `lib.rs` no cambia, la compilación incremental
+  **reutiliza la expansión anterior y empaqueta JS/CSS viejos** (síntoma: la app
+  ignora tus cambios). `tools/preparar-dist.mjs` toca `lib.rs` en cada build para
+  evitarlo; si compilaras a mano sin él, ejecuta `touch src-tauri/src/lib.rs`.
+- **Caché del WebView**: WebKit guarda `index.html` y los JS/CSS en disco. Por eso
+  la ventana abre `index.html?v=VERSION` y los recursos se piden con `?v=VERSION`
+  (lo inyecta `preparar-dist.mjs`); al subir de versión, los usuarios reciben el
+  código nuevo sin borrar nada.
+- **En escritorio no se registra el Service Worker** (todo es local; un SW viejo
+  podría servir contenido obsoleto). Se desregistra el que hubiera.
 - **Iconos**: `src-tauri/icons/` (PNG32/128/256/512 + `icon.ico`). Para regenerarlos
   desde el logo: `python3 tools/generar-iconos.py` (o `cargo tauri icon logo.png`).
 - **Android** exige Android Studio + SDK; **iOS/macOS** exigen un Mac con Xcode.
