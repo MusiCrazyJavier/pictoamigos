@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <!-- ==========================================================================
+       SECCIÓN: NÚCLEO-HTML
+       --------------------------------------------------------------------------
+       Qué controla: la estructura base de la app (cabecera, área de pantalla,
+       avisos accesibles) y las referencias a CSS/JS. Aquí NO se define el
+       contenido de las pantallas: eso vive en js/screens.js.
+       Cómo modificar:
+         - Cambiar el nombre de la app (aparece en 3 sitios): busca "PictoAmigos".
+         - Añadir un script nuevo: añade una etiqueta <script> antes de </body>.
+         - Cambiar el favicon / iconos: SECCIÓN: PWA-IDENTIDAD (manifest.json).
+       ========================================================================== -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="PictoAmigos: app de pictogramas con voz para niños autistas. Niveles, frases y gestos.">
+  <meta name="theme-color" content="#2F6FED">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <title>PictoAmigos — Pictogramas con voz</title>
+
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icons/favicon.png" type="image/png">
+
+  <!-- SECCIÓN: SISTEMA-DISEÑO (estilos) -->
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <div id="app" class="app">
+
+    <!-- SECCIÓN: CABECERA (botón atrás, título, ajustes) -->
+    <header class="cabecera" id="cabecera">
+      <button class="boton-icono" id="boton-volver" aria-label="Volver" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <h1 class="titulo-app" id="titulo-cabecera">PictoAmigos</h1>
+      <button class="boton-icono" id="boton-ajustes" aria-label="Ajustes">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15.5A3.5 3.5 0 1 0 12 8.5a3.5 3.5 0 0 0 0 7zm7.4-2.6c.1-.4.2-.9.2-1.4s-.1-1-.2-1.4l2-1.6-2-3.4-2.4 1a7.6 7.6 0 0 0-2.4-1.4L14.4 2h-4l-.4 2.7c-.9.3-1.7.8-2.4 1.4l-2.4-1-2 3.4 2 1.6c-.1.4-.2.9-.2 1.4s.1 1 .2 1.4l-2 1.6 2 3.4 2.4-1c.7.6 1.5 1.1 2.4 1.4l.4 2.7h4l.4-2.7c.9-.3 1.7-.8 2.4-1.4l2.4 1 2-3.4-2-1.6z" fill="currentColor"/></svg>
+      </button>
+    </header>
+
+    <!-- SECCIÓN: CONTAENEDOR-DE-PANTALLAS: aquí se pinta cada pantalla -->
+    <main class="vista" id="vista" tabindex="-1"></main>
+
+    <!-- Región para lectores de pantalla: anuncia lo que ocurre -->
+    <div class="oculto-visualmente" id="anuncio" aria-live="polite" role="status"></div>
+  </div>
+
+  <!-- Aviso flotante (p. ej. "Ajustes guardados") -->
+  <div class="aviso" id="aviso" role="status" aria-live="polite" hidden></div>
+
+  <!-- SECCIÓN: DATOS (el orden importa: primero datos, luego motor) -->
+  <script src="js/data/pictos.js"></script>
+  <script src="js/data/cuerpo.js"></script>
+  <script src="js/data/niveles.js"></script>
+  <script src="js/data/frases.js"></script>
+  <script src="js/data/sonidos.js"></script>
+
+  <!-- SECCIÓN: MOTOR -->
+  <script src="js/audio.js"></script>
+  <script src="js/mic.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/gestos.js"></script>
+  <script src="js/screens.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

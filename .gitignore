@@ -1,0 +1,22 @@
+# ---- Python (herramientas de generación) ----
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# ---- Node (si se añaden herramientas) ----
+node_modules/
+dist/
+release/
+*.log
+
+# ---- Sistema / editores ----
+.DS_Store
+Thumbs.db
+*.swp
+.vscode/
+.idea/
+
+# ---- Compilación de Tauri/Electron (si se añaden) ----
+src-tauri/target/
+out/
