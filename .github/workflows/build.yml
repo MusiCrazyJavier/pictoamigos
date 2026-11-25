@@ -17,6 +17,11 @@ on:
     branches: [main]
   workflow_dispatch:
 
+# Necesario para que tauri-action pueda crear el release (draft) y subir los
+# instaladores. Sin esto, GitHub da "Resource not accessible by integration".
+permissions:
+  contents: write
+
 jobs:
   escritorio:
     strategy:
