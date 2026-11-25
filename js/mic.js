@@ -235,8 +235,17 @@ window.Mic = (function () {
     return bibliotecaCargando;
   }
 
-  /** Devuelve la URL (blob) del modelo, usando la caché si ya se descargó. */
+  /** Devuelve la URL del modelo: la caché si existe, o el propio fichero
+   *  cuando la app va empaquetada (Tauri) y no hay API de caché. */
   async function obtenerModeloURL(onProgreso) {
+    // App de escritorio / origen sin API de caché: el modelo se distribuye
+    // dentro del paquete (dist/modelos/), así que se usa directamente.
+    if (typeof caches === "undefined" || caches === null) {
+      onProgreso && onProgreso(1);
+      estadoDescarga = "listo";
+      return RUTA_MODELO;
+    }
+
     try {
       const cache = await caches.open(CACHE_MODELO);
       const guardado = await cache.match(RUTA_MODELO);
@@ -304,13 +313,20 @@ window.Mic = (function () {
     return modeloCargando;
   }
 
-  /** ¿Ya está el modelo descargado? (rápido, no lo carga) */
+  /** ¿Está el modelo listo? (rápido, no lo carga) */
   async function modeloListo() {
     if (modeloVosk) return true;
     try {
       const cache = await caches.open(CACHE_MODELO);
       return !!(await cache.match(RUTA_MODELO));
-    } catch (e) { return false; }
+    } catch (e) {
+      // Sin API de caché (app empaquetada con Tauri): el modelo viene en el
+      // propio paquete, así que basta con que exista el fichero.
+      try {
+        const r = await fetch(RUTA_MODELO, { method: "HEAD" });
+        return r.ok;
+      } catch (e2) { return false; }
+    }
   }
 
   /** Escucha con Vosk y devuelve la comparación con la palabra. */
