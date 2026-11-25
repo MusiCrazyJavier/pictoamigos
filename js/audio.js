@@ -79,6 +79,7 @@ window.Voz = (function () {
     return clave ? mapa[clave] : null;
   }
 
+  /** Reproduce un MP3 incluido. */
   function hablarLocal(texto) {
     const fichero = ficheroDe(texto);
     if (!fichero) return false;
@@ -89,12 +90,12 @@ window.Voz = (function () {
       }
       elementoAudio.pause();
       elementoAudio.src = "audio/" + fichero;
-      elementoAudio.currentTime = 0;
+      try { elementoAudio.currentTime = 0; } catch (e) {}
       const p = elementoAudio.play();
-      if (p && p.catch) p.catch(err => console.warn("No se pudo reproducir el audio:", err));
+      if (p && p.catch) p.catch(err => console.warn("[voz] play() rechazado:", err && err.name));
       return true;
     } catch (e) {
-      console.warn("Audio local no disponible:", e);
+      console.warn("[voz] Audio local no disponible:", e);
       return false;
     }
   }
@@ -102,6 +103,7 @@ window.Voz = (function () {
   function hablarSistema(texto) {
     const t = String(texto || "").trim();
     if (!t || !soportado()) return false;
+    console.log("[voz] >>> speechSynthesis.speak()", t);   // diagnóstico
     try {
       window.speechSynthesis.cancel();
       const u = new SpeechSynthesisUtterance(t);
@@ -125,6 +127,15 @@ window.Voz = (function () {
     const t = String(texto || "").trim();
     if (!t || !cfg.activado) return;
 
+    // ESCRITORIO: nunca se llama a la voz del sistema, porque en WebKitGTK
+    // speechSynthesis puede bloquear la ventana de forma permanente.
+    if (EN_ESCRITORIO && cfg.modo !== "sistema") {
+      console.log("[voz] local ->", t, "| escritorio:", EN_ESCRITORIO, "| modo:", cfg.modo);
+      if (!hablarLocal(t)) console.warn("[voz] sin MP3 para:", t);
+      return;
+    }
+    console.log("[voz] modo:", cfg.modo, "| escritorio:", EN_ESCRITORIO, "| texto:", t);
+
     const haySistema = !!vozEspanola();
 
     if (cfg.modo === "local") {
@@ -145,6 +156,7 @@ window.Voz = (function () {
   let sistemaUsado = false;
 
   function detener() {
+    console.log("[voz] detener() | sistemaUsado:", sistemaUsado);
     if (sistemaUsado && soportado()) {
       try { window.speechSynthesis.cancel(); } catch (e) {}
     }

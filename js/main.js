@@ -102,6 +102,15 @@
   function iniciar() {
     const vista = document.getElementById("vista");
 
+    // Registro de errores: sirve para diagnosticar la app empaquetada
+    // (verlos con: WEBKIT_DEBUG=1 ./pictoamigos)
+    window.addEventListener("error", (e) => {
+      console.error("[PictoAmigos] error:", e.message, "|", e.filename, ":", e.lineno);
+    });
+    window.addEventListener("unhandledrejection", (e) => {
+      console.error("[PictoAmigos] promesa rechazada:", e.reason);
+    });
+
     // El primer toque desbloquea el audio (requisito de los navegadores)
     const desbloquear = () => { Voz.desbloquearAudio(); };
     window.addEventListener("pointerdown", desbloquear, { once: true });

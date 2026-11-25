@@ -339,10 +339,24 @@ window.Mic = (function () {
 
     let stream;
     try {
-      stream = await navigator.mediaDevices.getUserMedia({
+      const peticion = navigator.mediaDevices.getUserMedia({
         audio: { echoCancellation: true, noiseSuppression: true, channelCount: 1 }
       });
-    } catch (e) { throw { codigo: "sin-permiso" }; }
+      // Timeout: en apps empaquetadas (Tauri/Linux) puede no aparecer el
+      // diálogo de permiso y la promesa no termina nunca; así el botón
+      // vuelve de "escuchando" a su sitio en vez de quedarse para siempre.
+      peticion.then(
+        (s) => { if (stream !== s) s.getTracks().forEach(t => t.stop()); },
+        () => {}
+      );
+      stream = await Promise.race([
+        peticion,
+        new Promise((_, rechazar) =>
+          setTimeout(() => rechazar({ codigo: "sin-permiso" }), 8000))
+      ]);
+    } catch (e) {
+      throw (e && e.codigo) ? e : { codigo: "sin-permiso" };
+    }
 
     const contexto = new (window.AudioContext || window.webkitAudioContext)();
     try { if (contexto.state === "suspended") await contexto.resume(); } catch (e) {}

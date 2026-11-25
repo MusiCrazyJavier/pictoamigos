@@ -12,7 +12,7 @@
    doble clic) para que el modo offline active.
    ========================================================================== */
 
-const CACHE_VERSION = "pictoamigos-v20";
+const CACHE_VERSION = "pictoamigos-v21";
 const CACHE = CACHE_VERSION;
 
 // En localhost se usa "red primero" para que los cambios se vean al instante
