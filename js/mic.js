@@ -35,7 +35,7 @@ window.Mic = (function () {
   const RUTA_BIBLIOTECA = "js/vendor/vosk.js";
   const RUTA_MODELO = "modelos/vosk-model-small-es-0.3.tar.gz";
   const CACHE_MODELO = "pictoamigos-modelo";
-  const TIEMPO_ESPERA = 5200;                 // ms que se escucha antes de rendirse
+  const TIEMPO_ESPERA = 8000;                 // ms que se escucha antes de rendirse
   const UMBRALES = { facil: 0.5, normal: 0.7, estricto: 0.85 };
 
   /* ¿App empaquetada (Tauri)? WebKitGTK expone webkitSpeechRecognition pero
@@ -46,7 +46,7 @@ window.Mic = (function () {
   /* Textos amables que ve el niño cuando algo falla */
   const mensajes = {
     desactivado:  "El micrófono está apagado en Ajustes",
-    "sin-permiso":"Necesito el micrófono: permítelo en el navegador",
+    "sin-permiso":"Hay que permitir el micrófono en el navegador (icono de candado/cámara). Si no aparece el aviso, recarga la página.",
     "sin-voz":    "No te he oído… ¡inténtalo otra vez!",
     tiempo:       "Tardaste un poco… repite la palabra, tú puedes",
     "sin-motor":  "Este navegador no deja practicar la voz",
@@ -485,7 +485,10 @@ window.Mic = (function () {
     if (cfg.modo === "offline") return comprobarOffline(palabra, onProgreso);
 
     if (hayNavegador() && !EN_ESCRITORIO) {
-      if (modoLocal === null) { try { await detectarModoLocal(); } catch (e) {} }
+      // ATENCIÓN: NO se consulta SpeechRecognition.available() antes: en varios
+      // navegadores deja el servicio de reconocimiento colgado y el start()
+      // posterior graba sin devolver resultados nunca (micrófono "encendido"
+      // pero nada reconocido). Se va directo a start().
       try {
         return await comprobarNavegador(palabra);
       } catch (e) {
@@ -497,9 +500,8 @@ window.Mic = (function () {
           try {
             return await comprobarOffline(palabra, onProgreso);
           } catch (e2) {
-            // Si el modelo no está disponible se avisa con el error original
-            if (e2 && e2.codigo && e2.codigo !== "sin-permiso") throw e2;
-            throw e;
+            // Se informa el error REAL del intento con el modelo local
+            throw (e2 && e2.codigo) ? e2 : e;
           }
         }
         throw e;
