@@ -23,6 +23,9 @@ Funciona en **móvil, tablet y PC**, con **gestos** para moverse entre pantallas
 - **Micrófono en cada tarjeta** para practicar la pronunciación: el niño dice la palabra, la app la compara y, si acierta, sale una **animación de felicitación** («¡Muy bien!» con estrellas). Si falla, una burbuja suave «¡Otra vez!» y vuelve a pronunciar la palabra. **Nunca hay castigos ni errores en rojo.**
   - Dos motores: el del navegador (0 MB) y, si no hay internet o el navegador no lo permite, un **modelo pequeño sin conexión de 34 MB** incluido en `modelos/`.
   - Exigencia ajustable (Fácil / Normal / Estricto) en **Ajustes**.
+  - **Tolerante a muletillas y variantes**: cuenta como acierto si el niño dice la
+    palabra sola o acompañada (`el ocho`, `número uno`, `es un león`, `dame diez`),
+    si devuelve la cifra (`8` = ocho) o un sinónimo (`pescado` = pez).
 - **Formar Frases**: imagen + 3 o 4 palabras desordenadas → el niño las toca en orden (p. ej. *«El perro juega»*, *«El niño come dulces»*) y al terminar se lee la frase completa con un refuerzo positivo.
 - **Gestos**: deslizar ← → cambiar de nivel/frase · deslizar desde el borde izquierdo = atrás · ratón y flechas del teclado en PC.
 - **Tarjetas amigables** de esquinas redondeadas, fondos claros, sin parpadeos ni estímulos que distraigan.

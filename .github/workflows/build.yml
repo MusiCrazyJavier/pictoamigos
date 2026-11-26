@@ -74,8 +74,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tagName: v-app-v0.1.0
-          releaseName: "PictoAmigos v0.1.0 (alpha)"
+          tagName: v-app-v0.1.1
+          releaseName: "PictoAmigos v0.1.1 (alpha)"
           releaseBody: |
             **ESTADO: ALPHA** — versión de prueba, aún inestable.
 
@@ -85,8 +85,8 @@ jobs:
             **Versionado:** mientras esté en alpha la versión es0.x; la1.0.0 será
             el primer release maduro y estable.
 
-            Versión0.1.0: micrófono restaurado (lógica que funcionaba) y aviso
-            claro en la app de escritorio.
+            Versión0.1.1: micrófono restaurado + tolerancia en la pronunciación
+            (muletillas, cifras y sinónimos).
 
             Conocido en alpha:
             - El micrófono funciona en el NAVEGADOR/PWA; en la app de escritorio
