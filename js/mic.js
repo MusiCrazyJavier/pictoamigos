@@ -36,7 +36,7 @@ window.Mic = (function () {
   const RUTA_MODELO = "modelos/vosk-model-small-es-0.3.tar.gz";
   const CACHE_MODELO = "pictoamigos-modelo";
   const TIEMPO_ESPERA = 5200;                 // ms que se escucha antes de rendirse
-  const UMBRALES = { facil: 0.5, normal: 0.7, estricto: 0.85 };
+  const UMBRALES = { facil: 0.5, normal: 0.6, estricto: 0.8 };
 
   /* App empaquetada (Tauri): aquí los trabajadores no pueden leer blob: y
      WebKitGTK no tiene reconocimiento -> se avisa en vez de quedarse colgado. */
@@ -113,6 +113,34 @@ window.Mic = (function () {
     return 1 - levenshtein(x, y) / largo;
   }
 
+  /* Palabras de relleno (muletillas) que el niño puede añadir sin que deban
+     impedir el acierto: "el ocho", "número uno", "es un león", "dame diez". */
+  const MULETILLAS = new Set([
+    "el", "la", "los", "las", "un", "una", "unos", "unas", "es", "son", "yo",
+    "tu", "me", "dame", "por", "favor", "numero", "num", "muy", "bien",
+    "a", "de", "en", "con", "para", "que"
+  ]);
+
+  function sinRelleno(t) {
+    return String(t || "").split(" ").filter(p => p && !MULETILLAS.has(p)).join(" ").trim();
+  }
+
+  /* Variantes aceptadas para una palabra:
+     - cifras: el reconocimiento suele devolver "8" en vez de "ocho"
+     - sinónimos: "pescado" cuenta como "pez"
+     Para añadir más: agrega aquí la palabra y sus variantes
+     (SECCIÓN: COMPARADOR-DE-VOZ). */
+  const VARIANTES = {
+    "uno": ["1"], "dos": ["2"], "tres": ["3"], "cuatro": ["4"], "cinco": ["5"],
+    "seis": ["6"], "siete": ["7"], "ocho": ["8"], "nueve": ["9"], "diez": ["10"],
+    "pez": ["pescado"],
+    "perro": ["perrito", "cachorro"],
+    "gato": ["gatito", "michi"],
+    "plátano": ["banana"],
+    "león": ["leoncito"],
+    "niño": ["nenito"], "niña": ["nenita"]
+  };
+
   /**
    * Compara la palabra objetivo con lo que el navegador/modelo entendió.
    * candidatos: array de textos (hipótesis) o un solo texto.
@@ -122,20 +150,38 @@ window.Mic = (function () {
     const umbral = umbralNumero != null ? umbralNumero : umbralActual();
     const lista = Array.isArray(candidatos) ? candidatos : [candidatos];
     const obj = normalizar(objetivo);
+    const objLimpio = sinRelleno(obj) || obj;
+    const vars = (VARIANTES[objetivo] || VARIANTES[obj] || []).map(normalizar);
 
     let mejor = 0, mejorTexto = "";
     for (const crudo of lista) {
       if (!crudo) continue;
       const t = normalizar(crudo);
       if (!t) continue;
+      const tLimpio = sinRelleno(t);
+      let s = 0;
 
-      let s = similitud(obj, t);
-
-      // la palabra sola dentro de una frase ("come" en "come dulces")
-      if (s < 1 && obj.length >= 3 && t.includes(obj)) s = Math.max(s, 0.95);
-      // varias palabras: también se mira cada palabra suelta
-      for (const palabra of t.split(" ")) {
-        if (palabra.length >= 3) s = Math.max(s, similitud(obj, palabra));
+      //1) igualdad exacta, con o sin muletillas
+      if (t === obj || t === objLimpio || tLimpio === obj || tLimpio === objLimpio) {
+        s = 1;
+      }
+      //2) la palabra está dentro de la frase ("es un león", "come dulces")
+      else if (objLimpio.length >= 3 && (t.includes(objLimpio) || tLimpio.includes(objLimpio))) {
+        s = 0.95;
+      }
+      //3) variantes: cifras ("8" para "ocho") y sinónimos ("pescado" para "pez")
+      for (const v of vars) {
+        if (!v) continue;
+        const coincide = (t === v || tLimpio === v) ||
+                         (v.length > 2 && (t.includes(v) || tLimpio.includes(v)));
+        if (coincide) { s = Math.max(s, 0.95); break; }
+      }
+      //4) similitud letra por letra (errores del reconocimiento)
+      s = Math.max(s, similitud(obj, t), similitud(objLimpio, tLimpio));
+      for (const palabra of tLimpio.split(" ")) {
+        if (palabra.length >= 3) {
+          s = Math.max(s, similitud(obj, palabra), similitud(objLimpio, palabra));
+        }
       }
       if (s > mejor) { mejor = s; mejorTexto = crudo; }
     }
