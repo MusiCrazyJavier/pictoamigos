@@ -1,3 +1,10 @@
+> ## 🧪 ESTADO: **ALPHA** (versión de prueba, aún inestable)
+> - ✅ Pictogramas con voz, niveles, formar frases, gestos, PWA, instaladores.
+> - ⚠️ **Micrófono**: funciona en el **navegador/PWA**; en la **app de escritorio** aún no
+>   (WebKitGTK no deja cargar el modelo de reconocimiento — ver README §micrófono).
+> - ⚠️ Puede haber cambios incompatibles entre versiones alpha: si algo se rompe,
+>   avísame y lo arreglo (diagnóstico: `docs/DOCUMENTACION.md`).
+
 # 🧩 PictoAmigos — Pictogramas con voz para niños autistas
 
 App de **comunicación aumentativa y alternativa (AAC)** pensada para niños con TEA:

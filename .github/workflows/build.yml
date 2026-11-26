@@ -74,13 +74,24 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tagName: v-app-v1.0.1
-          releaseName: "PictoAmigos v1.0.1"
+          tagName: v-app-v1.0.2
+          releaseName: "PictoAmigos v1.0.2 (alpha)"
           releaseBody: |
-            App de pictogramas con voz para niños con TEA. Versión1.0.1: audio por blob, permiso de micrófono, actualizaciones sin caché vieja.
+            **ESTADO: ALPHA** — versión de prueba, aún inestable.
+
+            App de pictogramas con voz para niños con TEA (pictogramas ARASAAC,
+            licencia CC BY-NC-SA; código GPL-3.0-or-later).
+
+            Versión1.0.2: micrófono restaurado (lógica que funcionaba) y aviso
+            claro en la app de escritorio.
+
+            Conocido en alpha:
+            - El micrófono funciona en el NAVEGADOR/PWA; en la app de escritorio
+              (WebKitGTK) no todavía (ver README).
+            - La voz se genera con Piper TTS (es_MX-claude-high).
             Licencia: GPL-3.0-or-later (código) · CC BY-NC-SA (pictogramas ARASAAC).
           releaseDraft: true
-          prerelease: false
+          prerelease: true
           args: ${{ matrix.args }}
 
       # Copia local de los instaladores por si el paso del release falla:
