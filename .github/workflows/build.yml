@@ -74,8 +74,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tagName: v-app-v0.1.2
-          releaseName: "PictoAmigos v0.1.2 (alpha)"
+          tagName: v-app-v0.1.3
+          releaseName: "PictoAmigos v0.1.3 (alpha)"
           releaseBody: |
             **ESTADO: ALPHA** — versión de prueba, aún inestable.
 
@@ -85,8 +85,8 @@ jobs:
             **Versionado:** mientras esté en alpha la versión es0.x; la1.0.0 será
             el primer release maduro y estable.
 
-            Versión0.1.2: números sueltos (reintento del reconocedor),
-            se enseña lo oído y tolerancia a muletillas/cifras/sinónimos.
+            Versión0.1.3: arreglo del cierre inesperado en Linux/Wayland
+            (renderizado DMABUF de WebKitGTK) + números sueltos con reintento.
 
             Conocido en alpha:
             - El micrófono funciona en el NAVEGADOR/PWA; en la app de escritorio
