@@ -395,8 +395,9 @@ window.Mic = (function () {
       );
       stream = await Promise.race([
         peticion,
+        //20 s: margen para que el usuario lea y acepte el aviso de permiso
         new Promise((_, rechazar) =>
-          setTimeout(() => rechazar({ codigo: "sin-permiso" }), 8000))
+          setTimeout(() => rechazar({ codigo: "sin-permiso" }), 20000))
       ]);
     } catch (e) {
       throw (e && e.codigo) ? e : { codigo: "sin-permiso" };
