@@ -139,6 +139,20 @@ La página de muestras incluye las palabras difíciles (rojo, cruz, gafas, panta
 para comparar la pronunciación voz por voz.
 Instalación de Piper y de más voces: cabecera de `tools/generar-audios.py`.
 
+## 💥 Solucionar: «la app de escritorio se cierra sola (al pasar el ratón)»
+
+En **Linux con Wayland** (Hyprland, GNOME Wayland…) el renderizador **DMABUF** de
+WebKitGTK puede abortar el proceso de renderizado al repintar una tarjeta y la
+ventana se cierra **sin aviso**. Desde la **v0.1.3** la app lo evita sola:
+`src-tauri/src/lib.rs` exporta `WEBKIT_DISABLE_DMABUF_RENDERER=1` al arrancar.
+
+- **No te afecta si usas la web/PWA**: el arreglo vive solo en el binario.
+- Si te cerrara igual, prueba con el respaldo:
+  ```bash
+  WEBKIT_DISABLE_COMPOSITING_MODE=1 ./PictoAmigos_0.1.3_amd64.AppImage
+  ```
+- Para ver si hubo un cierre de este tipo: `coredumpctl list | grep -i picto`.
+
 ## 🧊 Solucionar: «la app de escritorio se traba en el primer clic»
 
 **Causa real (diagnosticada con el indicador de la propia app):** el **AppImage no
