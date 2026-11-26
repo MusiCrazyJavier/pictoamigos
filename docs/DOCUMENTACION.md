@@ -71,7 +71,7 @@ REGLAS A RESPETAR:
 
 | NOMBRE DE SECCIÓN | Qué controla |
 |---|---|
-| **COMPARADOR-DE-VOZ** | Normaliza y compara lo dicho con la palabra (Levenshtein + tolerancias). Tolera **muletillas** (`el ocho`, `número uno`, `es un león`, `dame diez`), acepta **cifras** (`8` = ocho) y **sinónimos** (`pescado` = pez) — todo en la constante `VARIANTES` de `js/mic.js`. Umbrales: fácil 0,5 · normal 0,6 · estricto 0,8. |
+| **COMPARADOR-DE-VOZ** | Normaliza y compara lo dicho con la palabra (Levenshtein + tolerancias). Tolera **muletillas** (`el ocho`, `número uno`, `es un león`, `dame diez`), acepta **cifras** (`8` = ocho) y **sinónimos** (`pescado` = pez) — todo en la constante `VARIANTES` de `js/mic.js`. Umbrales: fácil 0,5 · normal 0,6 · estricto 0,8. Si el reconocedor no devuelve nada con una palabra suelta (**sin-voz/vacio/tiempo**) se **reintenta una vez** automáticamente; al fallar se enseña lo oído («Te oí: …»). |
 | **MOTOR-NAVEGADOR** | Web Speech API (0 MB), con modo sin conexión si el navegador lo permite. |
 | **MOTOR-OFFLINE-VOSK** | Modelo Vosk local (34 MB): descarga, caché y reconocimiento sin internet. |
 | **SELECCION-DE-MOTOR** | Qué motor usar, reintentos y códigos de error. |

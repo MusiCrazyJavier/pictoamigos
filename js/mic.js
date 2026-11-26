@@ -423,6 +423,12 @@ window.Mic = (function () {
         final = (msg && msg.result && msg.result.text) || "";
         if (final.trim()) cerrar(resolve, comparar(palabra, [final]));
       });
+      // Al terminar la frase (onend del reconocedor) con texto parcial
+      // disponible se compara YA, sin esperar al tiempo completo.
+      reconocedor.on("end", () => {
+        const texto = final || parcial;
+        if (!cerrado && texto && texto.trim()) cerrar(resolve, comparar(palabra, [texto]));
+      });
       reconocedor.on("partialresult", (msg) => {
         parcial = (msg && msg.result && msg.result.partial) || parcial;
       });
@@ -466,7 +472,17 @@ window.Mic = (function () {
     if (hayNavegador()) {
       if (modoLocal === null) { try { await detectarModoLocal(); } catch (e) {} }
       try {
-        return await comprobarNavegador(palabra);
+        try {
+          return await comprobarNavegador(palabra);
+        } catch (e1) {
+          // Palabra suelta y corta ("ocho", "dos"): el reconocedor a veces no
+          // devuelve nada la primera vez. Se reintenta UNA vez automáticamente.
+          if (e1 && (e1.codigo === "sin-voz" || e1.codigo === "vacio" ||
+                     e1.codigo === "tiempo")) {
+            return await comprobarNavegador(palabra);
+          }
+          throw e1;
+        }
       } catch (e) {
         // Solo si el MOTOR falló (sin red, sin soporte…) se usa el sin conexión.
         // Si simplemente no se oyó nada ("sin-voz") no se cambia de motor.

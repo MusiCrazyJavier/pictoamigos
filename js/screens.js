@@ -134,6 +134,8 @@ window.Pantallas = (function () {
         } else {
           boton.classList.add("otra-vez");
           UI.burbuja(envoltura, "¡Otra vez!");
+          // Se enseña qué se oyó (ayuda al adulto a calibrar la exigencia)
+          if (res.texto) UI.mostrarAviso("Te oí: «" + res.texto + "»");
           Voz.hablar(palabra);              // vuelve a oír la palabra correcta
           UI.anunciar("Casi. Repite: " + palabra);
           setTimeout(() => boton.classList.remove("otra-vez"), 1800);
