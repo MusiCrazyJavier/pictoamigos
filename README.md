@@ -4,6 +4,9 @@
 >   (WebKitGTK no deja cargar el modelo de reconocimiento — ver README §micrófono).
 > - ⚠️ Puede haber cambios incompatibles entre versiones alpha: si algo se rompe,
 >   avísame y lo arreglo (diagnóstico: `docs/DOCUMENTACION.md`).
+>
+> **Política de versiones:** mientras dure la alpha la versión será **0.x**
+> (0.1.0, 0.2.0…); **la1.0.0 se publicará cuando la considere madura y estable**.
 
 # 🧩 PictoAmigos — Pictogramas con voz para niños autistas
 

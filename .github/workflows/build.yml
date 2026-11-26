@@ -74,15 +74,18 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tagName: v-app-v1.0.2
-          releaseName: "PictoAmigos v1.0.2 (alpha)"
+          tagName: v-app-v0.1.0
+          releaseName: "PictoAmigos v0.1.0 (alpha)"
           releaseBody: |
             **ESTADO: ALPHA** — versión de prueba, aún inestable.
 
             App de pictogramas con voz para niños con TEA (pictogramas ARASAAC,
             licencia CC BY-NC-SA; código GPL-3.0-or-later).
 
-            Versión1.0.2: micrófono restaurado (lógica que funcionaba) y aviso
+            **Versionado:** mientras esté en alpha la versión es0.x; la1.0.0 será
+            el primer release maduro y estable.
+
+            Versión0.1.0: micrófono restaurado (lógica que funcionaba) y aviso
             claro en la app de escritorio.
 
             Conocido en alpha:
