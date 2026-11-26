@@ -187,14 +187,14 @@ con el paso exacto (`ERROR: …`), y los errores de JS también se imprimen en c
 | Versión | Micrófono | Voz al tocar |
 |---|---|---|
 | **Navegador / PWA** (móvil, tablet, PC) | ✅ funciona | ✅ |
-| **App de escritorio** (Tauri: exe, deb, AppImage) | ⚠️ **no disponible** (ver abajo) | ✅ |
+| **App de escritorio** (Tauri: exe, deb, AppImage) | ✅ funciona (desde 0.1.4) | ✅ |
 
-**Por qué en la app de escritorio no:** WebKitGTK (el motor de la app empaquetada)
-**no permite que los trabajadores web lean URLs `blob:`**, y ahí es donde Vosk carga
-el modelo de reconocimiento (diagnóstico: `trabajador lee modelo → sin respuesta`).
-Además WebKitGTK no implementa `webkitSpeechRecognition`. Al intentarlo, la app muestra
-**«La práctica de micrófono no está disponible en esta app de escritorio. Ábrela en el
-navegador (PWA) para practicar la pronunciación»** (nunca se queda colgada).
+**Cómo se arregló en la app de escritorio (0.1.4):** la causa era la **CSP** del
+paquete: sin `'unsafe-eval'` el motor de reconocimiento (Vosk) **no podía arrancar**
+y la promesa nunca respondía («Escuchando…» para siempre). Está añadido en
+`src-tauri/tauri.conf.json`. Además, el modelo (34 MB, integrado) se le pasa a Vosk
+por su **URL directa** dentro del paquete. Diagnosticado paso a paso con la línea
+`#diagnostico` de la app.
 
 **Cómo se usa la práctica (en el navegador):**
 1. Pulsa el **micrófono** de la tarjeta (permiso del navegador la primera vez).
@@ -202,10 +202,6 @@ navegador (PWA) para practicar la pronunciación»** (nunca se queda colgada).
    y se vuelve a pronunciar la palabra.
 3. **Ajustes** → interruptor del micrófono · exigencia (Fácil/Normal/Estricto) ·
    motor (Automático/Navegador/Sin conexión) · descarga de la voz sin conexión (34 MB).
-
-**Posible solución futura en escritorio:** servir la app por un **servidor HTTP local
-dentro de la propia app** (con cabeceras COOP/COEP): los trabajadores sí podrían leer
-`http://127.0.0.1/…` y Vosk arrancaría. Está en el roadmap (`docs/INVESTIGACION.md` §4).
 
 **El modelo de voz ya viene integrado**: `modelos/vosk-model-small-es-0.3.tar.gz` (34 MB)
 va dentro del paquete (`dist/`), así que **no hace falta descargar nada**: Ajustes debe

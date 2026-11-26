@@ -108,7 +108,7 @@ de diseño centrado en el usuario) y ajustar el umbral por niño.
 7. **Idioma extra** (catalán, inglés, francés): ARASAAC ya tiene traducciones; cambiar `CAMBIAR_IDIOMA` en **MOTOR-DE-VOZ** y las etiquetas.
 8. **Validación con usuarios** (obligatorio según la literatura): probar con 2–3 niños y sus terapeutas antes de dar la app por terminada.
 9. **Velocidad por palabra**: al comparar voces se vio que algunas palabras suenan mejor con `es_MX-claude-high` y otras con `es_MX-claude-high-lento` (×1,25). Pendiente decidirla palabra a palabra y regenerar solo esas. Comparación actual: `tools/voces-ejemplo/index.html` (6 voces ×20 palabras).
-10. **Micrófono en la app de escritorio** (pendiente): hoy solo funciona en el navegador/PWA. Diagnóstico hecho: en WebKitGTK los **trabajadores web no pueden leer URLs `blob:`** (donde Vosk carga el modelo) y tampoco hay `webkitSpeechRecognition`. Solución prevista: servir la app desde un **servidor HTTP local dentro de la propia app** (los trabajadores sí leen `http://127.0.0.1/…`, como ya ocurre en el navegador) o usar un motor ASR sin trabajadores.
+10. ~~**Micrófono en la app de escritorio**~~ **RESUELTO en la 0.1.4**: la causa era la **CSP** del paquete (`script-src` sin `'unsafe-eval'`), que impedía que el trabajador de Vosk arrancara; además el modelo se le pasa por URL directa (`tauri://`) en vez de `blob:`. La vía «servidor HTTP local» (`docs/INVESTIGACION.md` §4) queda como alternativa por si apareciera otro bloqueo.
 
 ---
 

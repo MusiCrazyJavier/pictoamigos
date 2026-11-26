@@ -74,8 +74,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tagName: v-app-v0.1.3
-          releaseName: "PictoAmigos v0.1.3 (alpha)"
+          tagName: v-app-v0.1.4
+          releaseName: "PictoAmigos v0.1.4 (alpha)"
           releaseBody: |
             **ESTADO: ALPHA** — versión de prueba, aún inestable.
 
@@ -85,12 +85,13 @@ jobs:
             **Versionado:** mientras esté en alpha la versión es0.x; la1.0.0 será
             el primer release maduro y estable.
 
-            Versión0.1.3: arreglo del cierre inesperado en Linux/Wayland
-            (renderizado DMABUF de WebKitGTK) + números sueltos con reintento.
+            Versión0.1.4: micrófono FUNCIONANDO en la app de escritorio
+            (la CSP bloqueaba el motor de reconocimiento) + arreglo del cierre
+            inesperado en Linux/Wayland (DMABUF).
 
             Conocido en alpha:
-            - El micrófono funciona en el NAVEGADOR/PWA; en la app de escritorio
-              (WebKitGTK) no todavía (ver README).
+            - El micrófono funciona en el NAVEGADOR/PWA y en la app de escritorio
+              (desde la0.1.4).
             - La voz se genera con Piper TTS (es_MX-claude-high).
             Licencia: GPL-3.0-or-later (código) · CC BY-NC-SA (pictogramas ARASAAC).
           releaseDraft: true

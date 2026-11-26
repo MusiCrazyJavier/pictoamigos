@@ -115,11 +115,12 @@
     window.Diag = function (txt) {
       try {
         window._diagLineas.push(txt);
-        if (window._diagLineas.length > 10) window._diagLineas.shift();
+        if (window._diagLineas.length > 14) window._diagLineas.shift();
         cajaDiag.textContent = window._diagLineas.join("  ·  ");
         console.log("[PictoAmigos]", txt);
       } catch (e) {}
     };
+    cajaDiag.hidden = true;   // se muestra SOLO si hay un error
     window.Diag("[" + (window.__BUILD_STAMP__ || "sin marca") + "] esc=" + (window.Voz && Voz.escritorio) +
                 " · esc=" + (window.Voz ? String(Voz.escritorio) : "s/Voz") +
                 " · proto=" + location.protocol +
@@ -135,6 +136,8 @@
     window.addEventListener("unhandledrejection", (e) => {
       console.error("[PictoAmigos] promesa rechazada:", e.reason);
     });
+
+
 
     // El primer toque desbloquea el audio (requisito de los navegadores)
     const desbloquear = () => { Voz.desbloquearAudio(); };

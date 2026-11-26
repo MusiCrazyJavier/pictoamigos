@@ -49,7 +49,7 @@ window.Mic = (function () {
     "sin-voz":    "No te he oído… ¡inténtalo otra vez!",
     tiempo:       "Tardaste un poco… repite la palabra, tú puedes",
     "sin-motor":  "Este navegador no deja practicar la voz",
-    "escritorio-sin-mic": "La práctica de micrófono no está disponible en la app de escritorio. Ábrela en el navegador (PWA).",
+    "escritorio-sin-mic": "No pude iniciar la práctica de micrófono en la app de escritorio. Reinicia la app; si insiste, ábrela en el navegador (PWA).",
     "sin-modelo": "La voz sin conexión aún no está lista: ve a Ajustes y pulsa «Descargar voz sin conexión»",
     "modelo-no-encontrado": "No encuentro el fichero del modelo en la carpeta «modelos»: falta vosk-model-small-es-0.3.tar.gz",
     "modelo-fallo": "La voz sin conexión no ha arrancado: vuelve a descargarla en Ajustes",
@@ -286,8 +286,27 @@ window.Mic = (function () {
     return bibliotecaCargando;
   }
 
-  /** Devuelve la URL (blob) del modelo, usando la caché si ya se descargó. */
+  /** Devuelve la URL del modelo, usando la caché si ya se descargó. */
   async function obtenerModeloURL(onProgreso) {
+    // APP ESCRITORIO (Tauri): se le pasa a Vosk la RUTA DIRECTA del modelo
+    // dentro del paquete (modelos/...) en vez de un blob:, para que sea el
+    // propio trabajador quien lo descargue desde tauri://. La web/PWA sigue
+    // usando el blob de siempre (aquí no cambia nada).
+    // (La causa real del fallo en escritorio era la CSP: sin 'unsafe-eval' el
+    //  trabajador de Vosk no podía arrancar — ver src-tauri/tauri.conf.json.)
+    if (EN_ESCRITORIO) {
+      try {
+        const r = await fetch(RUTA_MODELO, { method: "HEAD" });
+        if (r.ok) {
+          estadoDescarga = "listo";
+          onProgreso && onProgreso(1);
+          // URL ABSOLUTA: el trabajador resuelve las rutas relativas contra su
+          // propia base (blob:), así que "modelos/..." no le llevaría a ningún sitio.
+          return new URL(RUTA_MODELO, location.href).href;
+        }
+      } catch (e) { /* si falla, se avisa abajo con "modelo-no-encontrado" */ }
+      throw { codigo: "modelo-no-encontrado" };
+    }
     try {
       const cache = await caches.open(CACHE_MODELO);
       const guardado = await cache.match(RUTA_MODELO);
@@ -465,7 +484,8 @@ window.Mic = (function () {
     const onProgreso = opciones && opciones.onProgreso;
     if (!cfg.activado) throw { codigo: "desactivado" };
     if (!hayMicrofono()) throw { codigo: "sin-permiso" };
-    if (EN_ESCRITORIO) throw { codigo: "escritorio-sin-mic" };   // no se cuelga
+    // (antes: si era escritorio se rendía sin intentar; ahora se intenta con la
+    //  URL directa del modelo y si falla se informa el error real)
 
     if (cfg.modo === "offline") return comprobarOffline(palabra, onProgreso);
 
