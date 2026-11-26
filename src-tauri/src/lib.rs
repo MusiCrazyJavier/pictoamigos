@@ -25,3 +25,5 @@ pub fn run() {
         .run(tauri::generate_context!())
         .expect("error al iniciar PictoAmigos");
 }
+
+// build-stamp: 1795652176527

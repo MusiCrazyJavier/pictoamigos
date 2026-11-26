@@ -435,6 +435,8 @@ button { font-family: inherit; }
   pointer-events: none;
   white-space: normal;
   max-width: 72vw;
+  max-height: 40vh;
+  overflow: hidden;
 }
 #diagnostico[hidden] { display: none; }
 

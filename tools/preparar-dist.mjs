@@ -13,7 +13,7 @@
  * Salida: dist/  (añadida a .gitignore)
  */
 
-import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, utimesSync, writeFileSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -71,6 +71,13 @@ const conf = JSON.parse(readFileSync(confRuta, "utf8"));
 const version = conf.version;
 const indice = join(DESTINO, "index.html");
 let html = readFileSync(indice, "utf8");
+// Marca de build visible en runtime (diagnóstico de versiones)
+const sello = "build " + new Date().toISOString().slice(0, 19).replace("T", " ");
+if (!html.includes("__BUILD_STAMP__")) {
+  html = html.replace("<head>", `<head>\n  <script>window.__BUILD_STAMP__ = ${JSON.stringify(sello)};</script>`);
+} else {
+  html = html.replace(/window\.__BUILD_STAMP__ = "[^"]*"/, `window.__BUILD_STAMP__ = ${JSON.stringify(sello)}`);
+}
 html = html.replace(/(src|href)="([^"?]+\.(?:js|css))"/g, `$1="$2?v=${version}"`);
 writeFileSync(indice, html);
 
@@ -87,7 +94,18 @@ if (ventana && ventana.url !== urlVentana) {
  * expansión anterior y el binario se queda con JS/CSS VIEJOS. Tocar lib.rs
  * fuerza la re-expansión en cada build. */
 const libRs = join(RAIZ, "src-tauri", "src", "lib.rs");
-const ahora = new Date();
-try { utimesSync(libRs, ahora, ahora); } catch (_) {}
+try {
+  // Cambiar el CONTENIDO (no solo el mtime): la compilación incremental de
+  // rustc reutiliza la expansión de la macro si el texto no cambia, y el
+  // binario se quedaría con los assets viejos aunque dist/ esté actualizado.
+  let lib = readFileSync(libRs, "utf8");
+  const marca = "// build-stamp: " + Date.now();
+  if (lib.includes("// build-stamp:")) {
+    lib = lib.replace(/\/\/ build-stamp: .*/, marca);
+  } else {
+    lib = lib.trimEnd() + "\n\n" + marca + "\n";
+  }
+  writeFileSync(libRs, lib);
+} catch (_) {}
 
 console.log(`dist/ listo: ${elementos} elementos, ${(bytes / 1024 / 1024).toFixed(1)} MB · versión ${version}`);

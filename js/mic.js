@@ -38,6 +38,11 @@ window.Mic = (function () {
   const TIEMPO_ESPERA = 5200;                 // ms que se escucha antes de rendirse
   const UMBRALES = { facil: 0.5, normal: 0.7, estricto: 0.85 };
 
+  /* ¿App empaquetada (Tauri)? WebKitGTK expone webkitSpeechRecognition pero
+     NO funciona (y puede bloquear la ventana), así que en escritorio se usa
+     directamente el motor sin conexión (Vosk), igual que con la voz. */
+  const EN_ESCRITORIO = !!(window.Voz && window.Voz.escritorio);
+
   /* Textos amables que ve el niño cuando algo falla */
   const mensajes = {
     desactivado:  "El micrófono está apagado en Ajustes",
@@ -46,6 +51,7 @@ window.Mic = (function () {
     tiempo:       "Tardaste un poco… repite la palabra, tú puedes",
     "sin-motor":  "Este navegador no deja practicar la voz",
     "sin-modelo": "La voz sin conexión aún no está lista: ve a Ajustes y pulsa «Descargar voz sin conexión»",
+    "escritorio-sin-mic": "La práctica de micrófono no está disponible en esta app de escritorio. Ábrela en el navegador (PWA) para practicar la pronunciación.",
     "modelo-no-encontrado": "No encuentro el fichero del modelo en la carpeta «modelos»: falta vosk-model-small-es-0.3.tar.gz",
     "modelo-fallo": "La voz sin conexión no ha arrancado: vuelve a descargarla en Ajustes",
     "sin-biblioteca": "Falta la biblioteca de voz (js/vendor/vosk.js): recarga la página",
@@ -157,7 +163,12 @@ window.Mic = (function () {
     try {
       const R = window.SpeechRecognition;
       if (R && typeof R.available === "function") {
-        const estado = await R.available({ langs: ["es-ES"], processLocally: true });
+        // En WebKitGTK esta promesa puede no resolver NUNCA: tiempo límite.
+        const estado = await Promise.race([
+          R.available({ langs: ["es-ES"], processLocally: true }),
+          new Promise((_, rechazar) =>
+            setTimeout(() => rechazar(new Error("timeout")), 3000))
+        ]);
         modoLocal = (estado === "available");
       } else modoLocal = false;
     } catch (e) { modoLocal = false; }
@@ -238,12 +249,25 @@ window.Mic = (function () {
   /** Devuelve la URL del modelo: la caché si existe, o el propio fichero
    *  cuando la app va empaquetada (Tauri) y no hay API de caché. */
   async function obtenerModeloURL(onProgreso) {
-    // App de escritorio / origen sin API de caché: el modelo se distribuye
-    // dentro del paquete (dist/modelos/), así que se usa directamente.
-    if (typeof caches === "undefined" || caches === null) {
+    // App de escritorio: el modelo ya va dentro del paquete (dist/modelos/).
+    // Se usa la URL ABSOLUTA directa: sin copiar34 MB a un blob ni a la caché
+    // (el trabajador de Vosk la descarga desde el origen de la app).
+    if (EN_ESCRITORIO || typeof caches === "undefined" || caches === null) {
       onProgreso && onProgreso(1);
       estadoDescarga = "listo";
-      return RUTA_MODELO;
+      try {
+        // Blob: el trabajador de Vosk no siempre puede leer tauri://, pero un
+        // blob del mismo origen sí (y el fetch del paquete ya funciona).
+        const respuesta = await fetch(new URL(RUTA_MODELO, location.href).href);
+        if (respuesta.ok) {
+          window.Diag && Diag("MIC: modelo leído (" +
+            Math.round((Number(respuesta.headers.get("content-length")) || 0) / 1048576) + " MB)");
+          return URL.createObjectURL(await respuesta.blob());
+        }
+      } catch (e) {
+        window.Diag && Diag("MIC: blob no disponible → " + e.message);
+      }
+      return new URL(RUTA_MODELO, location.href).href;
     }
 
     try {
@@ -293,16 +317,26 @@ window.Mic = (function () {
     if (modeloCargando) return modeloCargando;
     estadoDescarga = "descargando";
     modeloCargando = (async () => {
+      window.Diag && Diag("MIC: cargando biblioteca Vosk…");
       await cargarBiblioteca();
+      window.Diag && Diag("MIC: preparando modelo (34 MB)…");
       const url = await obtenerModeloURL(onProgreso);
+      window.Diag && Diag("MIC: modelo listo, creando reconocedor…");
       let modelo;
       try {
-        modelo = await window.Vosk.createModel(url);
+        modelo = await Promise.race([
+          window.Vosk.createModel(url),
+          new Promise((_, rechazar) =>
+            setTimeout(() => rechazar({ timeout: true }), 25000))
+        ]);
       } catch (e) {
-        // Vosk rechaza sin motivo: se traduce a un código con mensaje claro
+        const motivo = e && e.timeout ? "timeout25s"
+          : (e && (e.message || e.name)) || (e ? String(e) : "rechazado sin motivo");
+        window.Diag && Diag("MIC: createModel falló → " + motivo);
         throw { codigo: "modelo-fallo" };
       }
-      if (!modelo) throw { codigo: "modelo-fallo" };
+      if (!modelo) { window.Diag && Diag("MIC: createModel devolvió vacío"); throw { codigo: "modelo-fallo" }; }
+      window.Diag && Diag("MIC: reconocedor de Vosk creado ✓");
       modeloVosk = modelo;
       return modelo;
     })().catch((e) => {
@@ -316,9 +350,18 @@ window.Mic = (function () {
   /** ¿Está el modelo listo? (rápido, no lo carga) */
   async function modeloListo() {
     if (modeloVosk) return true;
+    //1) ¿ya está en la caché?
     try {
       const cache = await caches.open(CACHE_MODELO);
-      return !!(await cache.match(RUTA_MODELO));
+      if (await cache.match(RUTA_MODELO)) return true;
+    } catch (e) { /* seguimos */ }
+    // 2) ¿viene integrado en el propio paquete? (dist/modelos/)
+    try {
+      const r = await fetch(RUTA_MODELO, { method: "HEAD" });
+      if (r.ok) return true;
+    } catch (e) { /* seguimos */ }
+    try {
+      return false;
     } catch (e) {
       // Sin API de caché (app empaquetada con Tauri): el modelo viene en el
       // propio paquete, así que basta con que exista el fichero.
@@ -337,6 +380,7 @@ window.Mic = (function () {
       throw { codigo: "modelo-fallo" };
     }
 
+    window.Diag && Diag("MIC: pidiendo el micrófono al sistema…");
     let stream;
     try {
       const peticion = navigator.mediaDevices.getUserMedia({
@@ -369,6 +413,7 @@ window.Mic = (function () {
       throw { codigo: "modelo-fallo" };
     }
 
+    window.Diag && Diag("MIC: escuchando (espera5 s)…");
     return new Promise((resolve, reject) => {
       let cerrado = false;
       let final = "", parcial = "";
@@ -424,20 +469,30 @@ window.Mic = (function () {
   function activo() { return !!cfg.activado && hayMicrofono(); }
 
   async function comprobar(palabra, opciones) {
+    // Nunca se queda colgado: si algo se atasca, se avisa en vez de esperar eternamente.
+    return await Promise.race([
+      comprobarInterno(palabra, opciones),
+      new Promise((_, rechazar) =>
+        setTimeout(() => rechazar({ codigo: "sin-voz" }), 60000))
+    ]);
+  }
+
+  async function comprobarInterno(palabra, opciones) {
     const onProgreso = opciones && opciones.onProgreso;
     if (!cfg.activado) throw { codigo: "desactivado" };
     if (!hayMicrofono()) throw { codigo: "sin-permiso" };
 
     if (cfg.modo === "offline") return comprobarOffline(palabra, onProgreso);
 
-    if (hayNavegador()) {
+    if (hayNavegador() && !EN_ESCRITORIO) {
       if (modoLocal === null) { try { await detectarModoLocal(); } catch (e) {} }
       try {
         return await comprobarNavegador(palabra);
       } catch (e) {
         // Solo si el MOTOR falló (sin red, sin soporte…) se usa el sin conexión.
         // Si simplemente no se oyó nada ("sin-voz") no se cambia de motor.
-        const reintentables = ["red", "sin-motor", "no-iniciado"];
+        const reintentables = ["red", "sin-motor", "no-iniciado",
+                               "tiempo", "sin-voz", "vacio"];
         if (cfg.modo === "auto" && reintentables.indexOf(e.codigo) >= 0) {
           try {
             return await comprobarOffline(palabra, onProgreso);
@@ -450,11 +505,17 @@ window.Mic = (function () {
         throw e;
       }
     }
-    // Sin reconocimiento de navegador (p. ej. Firefox): motor sin conexión.
-    // Si el modelo no está descargado, se descarga ahora (34 MB, con progreso).
+    // Escritorio (o navegador sin reconocimiento): motor sin conexión Vosk.
+    // Si el modelo no está descargado, se carga ahora del propio paquete.
+    window.Diag && Diag("MIC: usando motor sin conexión (Vosk)…");
     try {
       return await comprobarOffline(palabra, onProgreso);
     } catch (e) {
+      // En la app de escritorio, si Vosk no arranca, se avisa con claridad
+      // en lugar de dejar el botón esperando.
+      if (EN_ESCRITORIO && e && e.codigo === "modelo-fallo") {
+        throw { codigo: "escritorio-sin-mic" };
+      }
       throw (e && e.codigo) ? e : { codigo: "sin-modelo" };
     }
   }

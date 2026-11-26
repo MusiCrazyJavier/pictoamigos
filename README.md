@@ -155,18 +155,35 @@ con el paso exacto (`ERROR: …`), y los errores de JS también se imprimen en c
 
 ## 🎤 Práctica de pronunciación (micrófono)
 
-En la esquina **inferior derecha** de cada tarjeta de nivel hay un botón de micrófono:
+**Dónde funciona:**
 
-1. El niño pulsa el micrófono y dice la palabra (pide permiso al navegador la primera vez).
-2. La app la compara con la palabra correcta:
-   - **Acierto** → animación de estrellas + «¡Muy bien!» + vibración breve.
-   - **Casi** → burbuja «¡Otra vez!» y se pronuncia otra vez la palabra para que la imite.
-   - **Sin permiso / sin conexión** → aviso para el adulto, nunca un error para el niño.
-3. **Ajustes** permite:
-   - encender/apagar el botón de micrófono,
-   - la exigencia: **Fácil (50 %) · Normal (70 %) · Estricto (85 %)**,
-   - el motor: **Automático · Solo navegador · Solo sin conexión**,
-   - **Descargar voz sin conexión (34 MB)** para practicar sin internet.
+| Versión | Micrófono | Voz al tocar |
+|---|---|---|
+| **Navegador / PWA** (móvil, tablet, PC) | ✅ funciona | ✅ |
+| **App de escritorio** (Tauri: exe, deb, AppImage) | ⚠️ **no disponible** (ver abajo) | ✅ |
+
+**Por qué en la app de escritorio no:** WebKitGTK (el motor de la app empaquetada)
+**no permite que los trabajadores web lean URLs `blob:`**, y ahí es donde Vosk carga
+el modelo de reconocimiento (diagnóstico: `trabajador lee modelo → sin respuesta`).
+Además WebKitGTK no implementa `webkitSpeechRecognition`. Al intentarlo, la app muestra
+**«La práctica de micrófono no está disponible en esta app de escritorio. Ábrela en el
+navegador (PWA) para practicar la pronunciación»** (nunca se queda colgada).
+
+**Cómo se usa la práctica (en el navegador):**
+1. Pulsa el **micrófono** de la tarjeta (permiso del navegador la primera vez).
+2. Di la palabra → si acierta: animación **«¡Muy bien!»**; si no: burbuja **«¡Otra vez!»**
+   y se vuelve a pronunciar la palabra.
+3. **Ajustes** → interruptor del micrófono · exigencia (Fácil/Normal/Estricto) ·
+   motor (Automático/Navegador/Sin conexión) · descarga de la voz sin conexión (34 MB).
+
+**Posible solución futura en escritorio:** servir la app por un **servidor HTTP local
+dentro de la propia app** (con cabeceras COOP/COEP): los trabajadores sí podrían leer
+`http://127.0.0.1/…` y Vosk arrancaría. Está en el roadmap (`docs/INVESTIGACION.md` §4).
+
+**El modelo de voz ya viene integrado**: `modelos/vosk-model-small-es-0.3.tar.gz` (34 MB)
+va dentro del paquete (`dist/`), así que **no hace falta descargar nada**: Ajustes debe
+indicar *«Voz sin conexión: lista»*. Si dice «sin descargar», es que la comprobación
+falló (mira `Mic.estadoModelo()` en **MICRÓFONO-PRACTICA**).
 
 **Peso añadido:** `modelos/vosk-model-small-es-0.3.tar.gz` (34 MB) + `js/vendor/vosk.js` (5,6 MB).
 Si no quieres la práctica sin conexión, puedes borrar `modelos/` y `js/vendor/`: el resto de la app

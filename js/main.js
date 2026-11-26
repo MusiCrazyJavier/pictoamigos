@@ -115,12 +115,12 @@
     window.Diag = function (txt) {
       try {
         window._diagLineas.push(txt);
-        if (window._diagLineas.length > 4) window._diagLineas.shift();
+        if (window._diagLineas.length > 10) window._diagLineas.shift();
         cajaDiag.textContent = window._diagLineas.join("  ·  ");
         console.log("[PictoAmigos]", txt);
       } catch (e) {}
     };
-    window.Diag("arranque · esc=" + (window.Voz && Voz.escritorio) +
+    window.Diag("[" + (window.__BUILD_STAMP__ || "sin marca") + "] esc=" + (window.Voz && Voz.escritorio) +
                 " · esc=" + (window.Voz ? String(Voz.escritorio) : "s/Voz") +
                 " · proto=" + location.protocol +
                 " · tauri=" + (window.__TAURI_INTERNALS__ ? "si" : "no"));
@@ -129,7 +129,7 @@
     // (verlos con: WEBKIT_DEBUG=1 ./pictoamigos)
     window.addEventListener("error", (e) => {
       console.error("[PictoAmigos] error:", e.message, "|", e.filename, ":", e.lineno);
-      cajaDiag.hidden = false;
+      cajaDiag.hidden = false;   // se muestra SOLO si hay un error
       window.Diag && window.Diag("ERROR: " + e.message + " (" + e.lineno + ")");
     });
     window.addEventListener("unhandledrejection", (e) => {

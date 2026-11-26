@@ -45,7 +45,7 @@ REGLAS A RESPETAR:
 | **COMPONENTES-UI** | `js/ui.js` | Tarjetas, botones, imágenes con respaldo, avisos y barajado. |
 | **GESTOS-NAVEGACION** | `js/gestos.js` | Deslizar (izquierda/derecha/borde), ratón y teclado. |
 | **PANTALLAS** | `js/screens.js` | Contenido y lógica de las 4 pantallas (ver subsecciones abajo). |
-| **MICRÓFONO-PRACTICA** | `js/mic.js` | Práctica de pronunciación: comparador de voz, motor del navegador y motor offline (Vosk). Códigos de error: `sin-permiso`, `sin-voz`, `tiempo`, `red`, `sin-motor`, `modelo-no-encontrado`, `modelo-fallo`, `sin-biblioteca`, `sin-modelo`. |
+| **MICRÓFONO-PRACTICA** | `js/mic.js` | Práctica de pronunciación: comparador de voz, motor del navegador y motor offline (Vosk). Códigos de error: `sin-permiso`, `sin-voz`, `tiempo`, `red`, `sin-motor`, `modelo-no-encontrado`, `modelo-fallo`, `sin-biblioteca`, `sin-modelo`, `escritorio-sin-mic`. **Limitación conocida:** en la app de escritorio (WebKitGTK) los trabajadores no pueden leer `blob:`, así que Vosk no arranca allí y se muestra `escritorio-sin-mic`; en el navegador/PWA sí funciona. |
 | **CONTROLADOR-PRINCIPAL** | `js/main.js` | Estado, navegación, cabecera, arranque y registro del modo offline. |
 | **VOZ-OFFLINE (Vosk)** | `js/vendor/vosk.js` | Biblioteca de reconocimiento sin conexión (fichero de terceros, no editar). |
 | **MODELO-DE-VOZ** | `modelos/vosk-model-small-es-0.3.tar.gz` | Modelo de español (34 MB) para practicar sin internet. |

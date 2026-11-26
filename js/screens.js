@@ -150,7 +150,7 @@ window.Pantallas = (function () {
           UI.mostrarAviso(texto);
         } else if (codigo === "sin-modelo" || codigo === "sin-biblioteca" ||
                    codigo === "red" || codigo === "modelo-no-encontrado" ||
-                   codigo === "modelo-fallo") {
+                   codigo === "modelo-fallo" || codigo === "escritorio-sin-mic") {
           UI.burbuja(envoltura, "Pide ayuda a un adulto", true);
           UI.mostrarAviso(texto);           // instrucción para el adulto
         } else {
