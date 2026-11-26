@@ -276,6 +276,23 @@ La app tiene **dos fuentes de voz** y elige sola la que funcione:
    ```
 4. Tras cualquier cambio, recarga con **Ctrl+F5** (o vacía la caché del navegador).
 
+## 🎙 Solucionar: «el micrófono no me oye» o «siempre dice ¡Otra vez!»
+
+Antes de culpar a la app, comprueba **qué micrófono está usando** (es la causa
+más frecuente y la encontramos en las pruebas):
+
+1. **Diademas / auriculares con micrófono**: muchas envían **silencio o ruido**
+   cuando el cable/muesca no está bien, o el sistema las elige por defecto y
+   dejan de hablar. Prueba con el **micrófono del portátil o la webcam**: si con
+   ese sí reconoce, el problema es la diadema, no la app.
+2. **Elegir el micrófono**: en Chrome/Edge, icono del **candado/cámara** en la
+   barra de direcciones → *Microfono* → elegir el dispositivo correcto → recargar.
+3. **Mira qué oyó la app**: al fallar muestra el aviso **«Te oí: "…"»**.
+   - Sale vacío o basura → el micrófono no capta (paso 1–2).
+   - Sale la palabra casi bien pero falla → baja la **Exigencia** en Ajustes.
+4. Di la palabra **después** de que se apague el icono de escucha, cerca del
+   micrófono y a una velocidad normal.
+
 ## 🧪 Comprobación rápida
 
 1. HOME → tarjetas con imagen.
