@@ -74,10 +74,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tagName: v-app-v1.0.0
-          releaseName: "PictoAmigos v1.0.0"
+          tagName: v-app-v1.0.1
+          releaseName: "PictoAmigos v1.0.1"
           releaseBody: |
-            App de pictogramas con voz para niños con TEA.
+            App de pictogramas con voz para niños con TEA. Versión1.0.1: audio por blob, permiso de micrófono, actualizaciones sin caché vieja.
             Licencia: GPL-3.0-or-later (código) · CC BY-NC-SA (pictogramas ARASAAC).
           releaseDraft: true
           prerelease: false
