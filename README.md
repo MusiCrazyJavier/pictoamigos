@@ -1,12 +1,42 @@
 > ## 🧪 ESTADO: **ALPHA** (versión de prueba, aún inestable)
 > - ✅ Pictogramas con voz, niveles, formar frases, gestos, PWA, instaladores.
-> - ⚠️ **Micrófono**: funciona en el **navegador/PWA**; en la **app de escritorio** aún no
->   (WebKitGTK no deja cargar el modelo de reconocimiento — ver README §micrófono).
+> - ✅ **Micrófono** de práctica disponible en el **navegador/PWA** y en la **app de escritorio**.
 > - ⚠️ Puede haber cambios incompatibles entre versiones alpha: si algo se rompe,
 >   avísame y lo arreglo (diagnóstico: `docs/DOCUMENTACION.md`).
 >
 > **Política de versiones:** mientras dure la alpha la versión será **0.x**
-> (0.1.0, 0.2.0…); **la1.0.0 se publicará cuando la considere madura y estable**.
+> (0.1.0, 0.2.0…); **la 1.0.0 se publicará cuando la considere madura y estable**.
+
+---
+
+## 🤝 Compromiso de esta app
+
+**Soy un padre de un niño con autismo** y he desarrollado PictoAmigos para llegar a
+otras familias con una aplicación **íntegramente gratuita y sin publicidad**.
+
+Entiendo de primera mano las dificultades económicas que atraviesa la mayoría de las
+familias en esta situación, y por eso **me comprometo públicamente** a que esta app:
+
+1. **Será siempre gratuita.** No se venderá, no habrá versiones de pago ni compras
+   dentro de la app.
+2. **No llevará nunca anuncios.** La idea nació precisamente al comprobar que todas
+   las apps que encontré mostraban publicidad: mi hijo, por sus características,
+   hacía clic en los anuncios e instalaba otras aplicaciones, y a menudo topaba con
+   contenido inadecuado para su edad. **Ese riesgo no existirá aquí.**
+3. **No recogerá datos personales** de los niños ni los compartirá con terceros.
+4. **Mantendrá la citación y la licencia** de sus recursos (pictogramas ARASAAC
+   CC BY-NC-SA), tal y como se indica en *Créditos y licencias*.
+
+> ⚠️ **Aviso importante — no soy profesional de la salud.** No soy psicólogo,
+> logopeda, terapeuta ocupacional ni personal sanitario. PictoAmigos **no es un
+> producto sanitario: no diagnostica, no trata y no sustituye en ningún caso el
+> criterio de profesionales**. Es una herramienta de apoyo comunicativo que he ido
+> desarrollando **únicamente a partir de los consejos de algunos profesionales con
+> los que he tratado en el acompañamiento de mi hijo**. **Antes de usarla con un
+> niño, consulta con su equipo terapéutico.** Si detectas un error o algo que pueda
+> perjudicar a un usuario, escríbeme y lo corregiré con prioridad.
+
+---
 
 # 🧩 PictoAmigos — Pictogramas con voz para niños autistas
 
@@ -18,6 +48,11 @@ Funciona en **móvil, tablet y PC**, con **gestos** para moverse entre pantallas
 
 ## ✨ Qué incluye
 
+- **Pantalla de carga amable** al abrir: mientras llegan los pictogramas y el audio
+  se prepara, se muestra un indicador (nunca más de 6 s; sin internet también sale).
+- **Pictogramas incluidos en el paquete** (`pictos/`, 206 imágenes): salen al
+  instante y **funcionan sin internet**. Si falta alguno, se intenta el CDN de
+  ARASAAC y, en último caso, queda el texto.
 - **HOME** con los niveles: Familia · Necesidades · Colores · Formas · Números · Animales · Comidas · Emociones · Ropa · Escuela + **Formar Frases**.
 - **Cada pictograma se pronuncia** al tocarlo: la app incluye **195 audios en español** generados con **Piper TTS (voz neuronal, natural)** que funcionan aunque el dispositivo no tenga voces instaladas, y también puede usar la voz natural del sistema.
 - **Micrófono en cada tarjeta** para practicar la pronunciación: el niño dice la palabra, la app la compara y, si acierta, sale una **animación de felicitación** («¡Muy bien!» con estrellas). Si falla, una burbuja suave «¡Otra vez!» y vuelve a pronunciar la palabra. **Nunca hay castigos ni errores en rojo.**
@@ -71,6 +106,8 @@ js/gestos.js          GESTOS-NAVEGACION    js/screens.js    PANTALLAS (4 pantall
 js/main.js            CONTROLADOR-PRINCIPAL
 js/data/pictos.js     DATOS-PICTOGRAMAS    js/data/niveles.js  DATOS-NIVELES
 js/data/frases.js     DATOS-FRASES
+audio/                MP3 de la voz (260)  pictos/         PICTOS ARASAAC (206)
+modelos/              Vosk sin conexión    tools/           scripts de build
 ```
 
 Ejemplo de petición de cambio:
@@ -179,6 +216,14 @@ cargo tauri build
 
 **Diagnóstico:** si vuelve a fallar algo, aparece una **línea gris abajo a la izquierda**
 con el paso exacto (`ERROR: …`), y los errores de JS también se imprimen en consola.
+
+**Lentitud en el primer clic (arreglada en 0.1.5):** además de lo anterior, el
+**AppImage seteaba un `PYTHONHOME` roto** (Python sin stdlib) que hacía morir a
+`gst-plugin-scan` y obligaba a reescanear los plugins de GStreamer **en cada uso**.
+Se elimina esa variable al arrancar (`src-tauri/src/lib.rs`) y ahora la app
+**precarga los MP3 y calienta el reproductor al abrirse** (`Voz.precargar()`), de
+modo que el escaneo de ~6 s ocurre mientras el niño mira la pantalla:
+**clic → sonido ≈ 65 ms** (antes, 9–10 s).
 
 ## 🎤 Práctica de pronunciación (micrófono)
 

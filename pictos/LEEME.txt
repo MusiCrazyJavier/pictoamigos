@@ -1,0 +1,27 @@
+PICTOGRAMAS DE ARASAAC — licencia CC BY-NC-SA
+=============================================
+
+Los archivos PNG de esta carpeta son pictogramas de ARASAAC, incluidos
+dentro de PictoAmigos para que la app funcione sin internet y muestre las
+imágenes al instante.
+
+Cita obligatoria (no la elimines al redistribuir la app):
+
+  Autor pictogramas: Sergio Palao · Origen: ARASAAC (arasaac.org) ·
+  Licencia: CC (BY-NC-SA) · Propiedad: Gobierno de Aragón (España)
+
+Licencia completa: https://creativecommons.org/licenses/by-nc-sa/4.0/
+
+Condiciones:
+  - BY  (atribución): citar autor, origen y licencia (arriba y en
+        Ajustes → «Créditos y licencias» de la app).
+  - NC  (no comercial): la app NO puede venderse, monetizarse ni llevar
+        publicidad mientras incluya estos pictogramas.
+  - SA  (compartir igual): si modificas las imágenes, distribúyelas con
+        la misma licencia CC BY-NC-SA.
+
+Origen de los ficheros: https://static.arasaac.org/pictograms/
+Descargados con la API pública de ARASAAC (206 imágenes, tamaños 300 y 500).
+
+Si algún día la app pasa a ser comercial, hay que sustituir este set por
+otro sin cláusula NC (p. ej. Mulberry, CC BY-SA). Ver docs/INVESTIGACION.md.

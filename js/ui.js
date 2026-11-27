@@ -23,12 +23,21 @@ window.UI = (function () {
 
   const CDN = "https://static.arasaac.org/pictograms/";
 
+  /* Pictogramas EMPAQUETADOS (carpeta pictos/): van dentro de la app para que
+     salgan al instante y funcionen sin internet. Si falta alguno (p. ej. una
+     palabra nueva sin regenerar), se intenta el CDN de ARASAAC; si tampoco
+     hay red, queda el texto en su lugar.
+     Licencia de estas imágenes: CC BY-NC-SA — © Gobierno de Aragón,
+     creadas por Sergio Palao para ARASAAC (ver Ajustes → Créditos). */
   function urlPicto(id, tam = 300) {
     if (!id) return null;
+    return "pictos/" + id + "_" + tam + ".png";
+  }
+  function urlCdn(id, tam = 300) {
     return CDN + id + "/" + id + "_" + tam + ".png";
   }
 
-  /** <img> con respaldo: si falla la imagen, queda el texto en su lugar. */
+  /** <img> con respaldo: local → CDN → texto. */
   function imagenPicto(id, texto, tam = 300) {
     const caja = document.createElement("span");
     caja.className = "contenedor-imagen";
@@ -43,10 +52,18 @@ window.UI = (function () {
     // guardadas en la caché para funcionar sin conexión.
     img.decoding = "async";
     img.draggable = false;
+    let intentoCdn = false;
     img.addEventListener("error", function () {
+      //1) si falla la local, se prueba el CDN de ARASAAC
+      if (!intentoCdn && id) {
+        intentoCdn = true;
+        img.src = urlCdn(id, tam);
+        return;
+      }
+      //2) si falla también el CDN: texto en su lugar
       caja.classList.add("sin-imagen");
       caja.textContent = texto || "";
-    }, { once: true });
+    });
     caja.appendChild(img);
     return caja;
   }

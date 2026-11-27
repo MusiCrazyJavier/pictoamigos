@@ -74,8 +74,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tagName: v-app-v0.1.5
-          releaseName: "PictoAmigos v0.1.5 (alpha)"
+          tagName: v-app-v0.1.7
+          releaseName: "PictoAmigos v0.1.7 (alpha)"
           releaseBody: |
             **ESTADO: ALPHA** — versión de prueba, aún inestable.
 
@@ -85,9 +85,8 @@ jobs:
             **Versionado:** mientras esté en alpha la versión es0.x; la1.0.0 será
             el primer release maduro y estable.
 
-            Versión0.1.5: arranque rápido (precarga de audio y GStreamer),
-            micrófono con reintento en el primer intento y PYTHONHOME del
-            AppImage corregido.
+            Versión0.1.7: pictogramas incluidos en el paquete, pantalla de
+            carga al abrir y compromiso público (app gratuita y sin anuncios).
 
             Conocido en alpha:
             - El micrófono funciona en el NAVEGADOR/PWA y en la app de escritorio

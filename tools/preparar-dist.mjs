@@ -31,6 +31,7 @@ const INCLUIR = [
   "js",
   "icons",
   "audio",
+  "pictos",  // pictogramas ARASAAC (CC BY-NC-SA) -> imágenes sin internet
   "modelos", // modelo Vosk (34 MB) -> reconocimiento de voz sin conexión
 ];
 

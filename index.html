@@ -28,6 +28,18 @@
 </head>
 <body>
 
+  <!-- SECCIÓN: PANTALLA-DE-CARGA: se ve mientras llegan los pictogramas y
+       GStreamer termina de prepararse (solo los primeros segundos).
+       Se oculta sola desde js/main.js (ver esconderCarga()). -->
+  <div id="pantalla-carga" class="pantalla-carga" role="status" aria-live="polite">
+    <div class="carga-contenido">
+      <div class="carga-logo" aria-hidden="true">🧩</div>
+      <p class="carga-titulo">PictoAmigos</p>
+      <div class="carga-barra" aria-hidden="true"><span class="carga-relleno"></span></div>
+      <p class="carga-texto">Preparando los pictogramas…</p>
+    </div>
+  </div>
+
   <div id="app" class="app">
 
     <!-- SECCIÓN: CABECERA (botón atrás, título, ajustes) -->

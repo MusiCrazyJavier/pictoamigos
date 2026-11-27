@@ -98,6 +98,48 @@
     UI.anunciar(titulo.textContent);
   }
 
+  /* ---------- PANTALLA DE CARGA ----------
+     Mientras llegan los pictogramas (y GStreamer termina de prepararse en la
+     app de escritorio) se muestra una pantalla amable. Se oculta cuando las
+     imágenes de la PRIMERA pantalla están cargadas, o a los 6 s como máximo
+     (así, sin internet, no se queda bloqueada nunca). */
+  function iniciarCarga() {
+    const pantalla = document.getElementById("pantalla-carga");
+    if (!pantalla) return;
+    const t0 = Date.now();
+    let ocultada = false;
+
+    const esconder = () => {
+      if (ocultada) return;
+      ocultada = true;
+      // Mínimo1,5 s visible: si no, la ventana de escritorio termina de
+      // aparecer cuando la pantalla ya se fue y el usuario ni la ve.
+      const espera = Math.max(0, 1500 - (Date.now() - t0));
+      setTimeout(() => {
+        pantalla.classList.add("oculta");
+        // se retira del DOM al terminar la transición (no estorba al foco)
+        setTimeout(() => { try { pantalla.remove(); } catch (e) {} }, 500);
+      }, espera);
+    };
+
+    // 1) esperar a que carguen las <img> ya pintadas en la primera pantalla
+    const imagenes = Array.from(document.querySelectorAll("#vista img"));
+    if (imagenes.length) {
+      let pendientes = imagenes.length;
+      const unaMenos = () => { if (--pendientes <= 0) esconder(); };
+      imagenes.forEach(img => {
+        if (img.complete) { unaMenos(); return; }
+        img.addEventListener("load", unaMenos, { once: true });
+        img.addEventListener("error", unaMenos, { once: true });
+      });
+    } else {
+      esconder();
+    }
+
+    // 2) red de seguridad: nunca más de 6 s (por si una imagen no responde)
+    setTimeout(esconder, 6000);   // tope máximo
+  }
+
   /* ---------- ARRANQUE ---------- */
   function iniciar() {
     const vista = document.getElementById("vista");
@@ -163,6 +205,11 @@
     Gestos.actualizar({});
 
     render();
+
+    // PANTALLA-DE-CARGA: se oculta cuando las imágenes de la primera pantalla
+    // han llegado (o a los 6 s como máximo, por si no hay red). Se muestra
+    // al menos 700 ms para que no parpadee.
+    iniciarCarga();
 
     // PWA: solo en el navegador. En la app empaquetada todo es local y el
     // Service Worker solo podría servir contenido cacheado antiguo: se omite
