@@ -144,6 +144,14 @@
     window.addEventListener("pointerdown", desbloquear, { once: true });
     window.addEventListener("keydown", desbloquear, { once: true });
 
+
+    // PRECARGA: en la app de escritorio se cargan los MP3 y se calienta el
+    // reproductor (GStreamer) desde que se abre, para que el primer clic en
+    // una tarjeta suene YA (antes tardaba 9-10 s en escanear plugins).
+    if (window.Voz && Voz.precargar) {
+      setTimeout(() => { try { Voz.precargar(); } catch (e) {} }, 300);
+    }
+
     // Botones de la cabecera
     document.getElementById("boton-volver").addEventListener("click", volver);
     document.getElementById("boton-ajustes").addEventListener("click", () => {

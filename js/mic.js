@@ -480,6 +480,24 @@ window.Mic = (function () {
      ==================================================================== */
   function activo() { return !!cfg.activado && hayMicrofono(); }
 
+  /** Reintenta UNA vez si el intento falla muy rápido (<2,5 s): eso casi
+   *  siempre es el pipeline de GStreamer aún calentándose (primer uso del
+   *  micrófono en la app empaquetada: "gst_caps_append" CRITICAL) y no un
+   *  error del usuario. Si tarda más, era el niño hablando → no se repite. */
+  async function reintentarRapido(intento) {
+    const t0 = Date.now();
+    try { return await intento(); }
+    catch (e) {
+      const rapido = Date.now() - t0 < 2500;
+      const codigos = ["sin-voz", "sin-permiso", "modelo-fallo", "sin-biblioteca"];
+      if (rapido && codigos.indexOf(e && e.codigo) >= 0) {
+        await new Promise(r => setTimeout(r, 400));
+        return intento();
+      }
+      throw e;
+    }
+  }
+
   async function comprobar(palabra, opciones) {
     const onProgreso = opciones && opciones.onProgreso;
     if (!cfg.activado) throw { codigo: "desactivado" };
@@ -487,7 +505,7 @@ window.Mic = (function () {
     // (antes: si era escritorio se rendía sin intentar; ahora se intenta con la
     //  URL directa del modelo y si falla se informa el error real)
 
-    if (cfg.modo === "offline") return comprobarOffline(palabra, onProgreso);
+    if (cfg.modo === "offline") return reintentarRapido(() => comprobarOffline(palabra, onProgreso));
 
     if (hayNavegador()) {
       if (modoLocal === null) { try { await detectarModoLocal(); } catch (e) {} }

@@ -48,6 +48,7 @@ window.Voz = (function () {
   let listaVoces = [];
   let ctxAudio = null;
   let elementoAudio = null;      // reproductor de los MP3 incluidos
+  let elementoCalentamiento = null;  // elemento mudo de la precarga (escritorio)
 
   function soportado() { return "speechSynthesis" in window; }
 
@@ -263,10 +264,93 @@ window.Voz = (function () {
     } catch (e) {}
   }
 
+  /* ======================================================================
+     SECCIÓN: PRECARGA (solo app de escritorio)
+     --------------------------------------------------------------------------
+     Al abrir la app se cargan los MP3 en blobs y se "calienta" el reproductor
+     con una reproducción MUDA: así el escaneo de plugins de GStreamer y la
+     creación del pipeline pasan AQUÍ, no en el primer clic del niño (que
+     tardaba 9-10 s). La web/PWA no lo necesita: ahí la caché del Service
+     Worker ya lo trae y el primer toque además desbloquea el audio.
+     ==================================================================== */
+  function precargar() {
+    if (!EN_ESCRITORIO) return;
+    const t0 = Date.now();
+    try {
+      if (!elementoAudio) {
+        elementoAudio = new Audio();
+        elementoAudio.preload = "auto";
+      }
+      const mapa = window.SONIDOS || {};
+      const ficheros = [];
+      Object.keys(mapa).forEach(k => {
+        const f = mapa[k];
+        if (f && !cacheBlobs[f]) ficheros.push(f);
+      });
+
+      // Descarga con concurrencia limitada (260 ficheros, ~3 MB en total)
+      let indice = 0, hechos = 0, fallos = 0;
+      const CONCURRENCIA = 6;
+      const trabajador = async () => {
+        while (indice < ficheros.length) {
+          const f = ficheros[indice++];
+          try {
+            const r = await fetch("audio/" + f);
+            if (r.ok) { cacheBlobs[f] = URL.createObjectURL(await r.blob()); hechos++; }
+            else fallos++;
+          } catch (e) { fallos++; }
+        }
+      };
+      const terminar = () => {
+        window.Diag && Diag("precarga: " + hechos + " MP3 en " +
+                            (Date.now() - t0) + " ms" + (fallos ? " (" + fallos + " fallos)" : ""));
+        calentarReproductor();
+      };
+      Promise.all(Array.from({ length: Math.min(CONCURRENCIA, ficheros.length) }, trabajador))
+        .then(terminar, terminar);
+    } catch (e) {
+      window.Diag && Diag("precarga ERROR: " + e.message);
+    }
+  }
+
+  /** Reproduce un MP3 MUDO para que GStreamer arranque su pipeline (y termine
+   *  de escanear plugins) mientras el niño todavía está mirando la pantalla. */
+  function calentarReproductor() {
+    try {
+      const mapa = window.SONIDOS || {};
+      const primero = Object.keys(mapa)[0] && mapa[Object.keys(mapa)[0]];
+      const url = primero && cacheBlobs[primero];
+      if (!url) return;
+      const a = new Audio();
+      // Referencia de módulo: sin ella WebKit puede recolectar el elemento y
+      // abortar la reproducción con AbortError.
+      elementoCalentamiento = a;
+      a.muted = true;                 // mudo: no molesta y el navegador lo permite
+      a.preload = "auto";
+      const limpiar = () => {
+        try { a.pause(); a.removeAttribute("src"); a.load(); } catch (e) {}
+        elementoCalentamiento = null;
+      };
+      a.addEventListener("ended", limpiar, { once: true });
+      a.addEventListener("error", () => {
+        window.Diag && Diag("calentamiento: error de audio");
+        elementoCalentamiento = null;
+      }, { once: true });
+      a.src = url;
+      const p = a.play();
+      if (p && p.catch) p.catch(err =>
+        window.Diag && Diag("calentamiento: play rechazado (" + (err && err.name) + ")"));
+      // El PRIMER load puede tardar ~6 s: GStreamer escanea sus plugins (en el
+      // AppImage el punto de montaje cambia y hay que rehacerlo). Aquí, al
+      // abrir la app, en vez del primer clic del niño.
+      setTimeout(() => { if (!a.ended) limpiar(); }, 40000);
+    } catch (e) { window.Diag && Diag("calentamiento EXCEP " + e.message); }
+  }
+
   cargarGuardado();
 
   return { hablar, detener, configurar, sonidoExito, desbloquearAudio,
-           soportado, estado,
+           precargar, soportado, estado,
            get config() { return Object.assign({}, cfg); },
          get escritorio() { return EN_ESCRITORIO; },
          estadoReproduccion() {

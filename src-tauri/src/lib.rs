@@ -31,6 +31,15 @@ pub fn run() {
         // Respaldo manual: si con el anterior aún se cierra, lanzar con
         //   WEBKIT_DISABLE_COMPOSITING_MODE=1 ./PictoAmigos...
         // (No se fuerza por defecto: puede afectar al desplazamiento.)
+
+        // PYTHONHOME DEL APPIMAGE: el AppRun apunta a un Python sin stdlib
+        // ("ModuleNotFoundError: No module named 'encodings'"), así que
+        // gst-plugin-scan muere y GStreamer vuelve a escanear plugins en cada
+        // uso → el primer clic en una tarjeta tardaba 9-10 s. Se quitan esas
+        // variables para que el escaneo use el Python del sistema (o falle
+        // limpio y pase de largo el plugin de Python, que la app no usa).
+        std::env::remove_var("PYTHONHOME");
+        std::env::remove_var("PYTHONPATH");
     }
 
     tauri::Builder::default()
@@ -45,4 +54,4 @@ pub fn run() {
         .expect("error al iniciar PictoAmigos");
 }
 
-// build-stamp: 1795726677061
+// build-stamp: 1795752989768
